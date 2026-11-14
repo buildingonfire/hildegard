@@ -1,0 +1,99 @@
+{
+  "version": 4,
+  "info": {
+    "version": 1,
+    "type": "CompleteDescription"
+  },
+  "Screen Mode Q-Links": {
+    "version": 4,
+    "map": [
+      {
+        "Tab": 1,
+        "SubTab": 1,
+        "Bank Direction": "Column",
+        "Q-Links": {
+          "Q-Link 1": -1,
+          "Q-Link 2": -1,
+          "Q-Link 3": -1,
+          "Q-Link 4": -1,
+          "Q-Link 5": -1,
+          "Q-Link 6": -1,
+          "Q-Link 7": -1,
+          "Q-Link 8": -1,
+          "Q-Link 9": 0,
+          "Q-Link 10": -1,
+          "Q-Link 11": -1,
+          "Q-Link 12": -1,
+          "Q-Link 13": 3,
+          "Q-Link 14": -1,
+          "Q-Link 15": -1,
+          "Q-Link 16": -1
+        }
+      },
+      {
+        "Tab": 2,
+        "SubTab": 1,
+        "Bank Direction": "Column",
+        "Q-Links": {
+          "Q-Link 1": 5,
+          "Q-Link 2": 13,
+          "Q-Link 3": 21,
+          "Q-Link 4": 29,
+          "Q-Link 5": 11,
+          "Q-Link 6": 19,
+          "Q-Link 7": 27,
+          "Q-Link 8": 35,
+          "Q-Link 9": 10,
+          "Q-Link 10": 18,
+          "Q-Link 11": 26,
+          "Q-Link 12": 34,
+          "Q-Link 13": 9,
+          "Q-Link 14": 17,
+          "Q-Link 15": 25,
+          "Q-Link 16": 33
+        }
+      },
+      {
+        "Tab": 3,
+        "SubTab": 1,
+        "Bank Direction": "Column",
+        "Q-Links": {
+          "Q-Link 1": -1,
+          "Q-Link 2": -1,
+          "Q-Link 3": -1,
+          "Q-Link 4": -1,
+          "Q-Link 5": 8,
+          "Q-Link 6": 16,
+          "Q-Link 7": 24,
+          "Q-Link 8": 32,
+          "Q-Link 9": 7,
+          "Q-Link 10": 15,
+          "Q-Link 11": 23,
+          "Q-Link 12": 31,
+          "Q-Link 13": 6,
+          "Q-Link 14": 14,
+          "Q-Link 15": 22,
+          "Q-Link 16": 30
+        }
+      }
+    ]
+  },
+  "Program Mode Q-Links": {
+    "Q-Link 1": 8,
+    "Q-Link 2": 16,
+    "Q-Link 3": 24,
+    "Q-Link 4": 32,
+    "Q-Link 5": 7,
+    "Q-Link 6": 15,
+    "Q-Link 7": 23,
+    "Q-Link 8": 31,
+    "Q-Link 9": 6,
+    "Q-Link 10": 14,
+    "Q-Link 11": 22,
+    "Q-Link 12": 30,
+    "Q-Link 13": 5,
+    "Q-Link 14": 13,
+    "Q-Link 15": 21,
+    "Q-Link 16": 29
+  }
+}

@@ -13,15 +13,23 @@
 //                                                                               |
 //                                        wet = Sigma --> soft clip --> [dry/wet mix] --> output
 //
-// THIS FILE = Build Order steps 2-3 (SPEC Section 14): the engine core.
+// THIS FILE = Build Order steps 2-3 (SPEC Section 14): the engine core, plus the
+// display parameters (37-169) that drive the hand-written skin in skins/.
 //   Done here: 30 s double buffer, Free-length record + buffer swap, four streams with
 //     4-point Hermite interpolation, tape speed (incl. reverse and hold-at-zero),
 //     loop + ping-pong with declick crossfades, tilt tone, equal-power pan, perceptual
-//     volume, muting, dry/wet, wet soft clip, parameter smoothing.
-//   Deliberately NOT here yet (later build-order steps): display parameters (37-169),
-//     transport-follow / bar-synced record / Resample timing, the speed-knob snapping
-//     curve, save-to-disk, project-chunk state, and the hand-written skin. Speed is a
-//     plain linear parameter for now; the plateau-snapping mapping comes with the UI.
+//     volume, muting, dry/wet, wet soft clip, parameter smoothing, transport-follow,
+//     save-to-disk, and the display parameters (head positions, status, waveform).
+//   Deliberately NOT here yet (later build-order steps): bar-synced record, Resample
+//     timing polish, the speed-knob snapping curve and project-chunk state. Speed is a
+//     plain linear parameter for now.
+//
+// Display parameters are written by a background "UI worker" thread (the same thread
+// that writes saved WAVs), never by process(). Proven on the Live III: the MPC only
+// redraws a plugin-written value when the plugin notifies it, so
+//   - pos1-4 and status are written + notifyHostParameterChanged(), at most 25 Hz;
+//   - the 128 wave bars change once per recording and are refreshed with a single
+//     requestDisplayUpdate() (they are non-automatable, to keep them out of automation).
 //   Also simplified for now: the buffer swap uses a short wet fade-in rather than a
 //     per-stream old->new chunk crossfade.
 //
@@ -62,14 +70,27 @@ namespace {
 // ---------------------------------------------------------------------------
 // Parameter layout (SPEC Section 5). ORDER AND IDS ARE PERMANENT once released.
 // Global 0-4, then 8 per stream for streams 1..4 (indices 5..36).
-// Display-only parameters (37-169) are appended in a later build-order step.
+// Display-only parameters follow (SPEC 5.3): pos1-4 (37-40), status (41), wave000-127 (42-169).
 // ---------------------------------------------------------------------------
 enum Global { kLength = 0, kRecord, kResample, kDryWet, kSave, kNumGlobal };
 enum StreamOff { oSpeed = 0, oTone, oPan, oVolume, oIn, oOut, oMode, oMute, kPerStream };
 
 constexpr int kNumStreams = 4;
-constexpr int kNumParams  = kNumGlobal + kNumStreams * kPerStream;   // 5 + 32 = 37
+constexpr int kNumUser    = kNumGlobal + kNumStreams * kPerStream;   // 5 + 32 = 37
 constexpr int streamBase(int s) { return kNumGlobal + s * kPerStream; }   // s = 0..3
+
+constexpr int kPos0      = kNumUser;            // 37..40
+constexpr int kStatus    = kPos0 + kNumStreams; // 41
+constexpr int kWave0     = kStatus + 1;         // 42..169
+constexpr int kWaveBars  = 128;
+constexpr int kNumParams = kWave0 + kWaveBars;  // 170
+
+// Status choices (SPEC 5.3). Order is permanent: the skin's replacementStrings and the red
+// error label (choices 6-7) depend on it.
+enum Status { stPressRecord = 0, stReady, stArmed, stRecording, stSaving, stSaved, stSaveFailed, stBufferFull };
+
+constexpr int    kUiPeriodMs   = 40;     // display updates at most 25 Hz
+constexpr double kFlashSeconds = 3.0;    // how long Saved / Save failed / Buffer full stay up
 
 constexpr int   kMaxFrames    = 1323000;   // 30 s * 44100
 constexpr float kMinRegionMs  = 10.0f;     // shortest loop region
@@ -223,10 +244,30 @@ public:
             addParam(boolParam  (("s" + n + "_mute").c_str(),   ("Mute " + n).c_str(),   defMute[s]));
         }
 
+        // ----- Display-only (37-169), written by the UI worker, read by the skin -----
+        // Names start with "~" so they sort to the end of the MPC's parameter lists.
+        for (int s = 0; s < kNumStreams; ++s)
+        {
+            const std::string n = std::to_string(s + 1);
+            addParam(floatParam(("pos" + n).c_str(), ("~Pos " + n).c_str(), 0.0f, 1.0f, 0.0f, "", 3));
+        }
+        addParam(choiceParam("status", "~Status",
+                             {"Press Record", "Ready", "Armed", "Recording", "Saving", "Saved", "Save failed", "Buffer full"}, 0));
+        for (int i = 0; i < kWaveBars; ++i)
+        {
+            char id[16], nm[16];
+            std::snprintf(id, sizeof(id), "wave%03d", i);
+            std::snprintf(nm, sizeof(nm), "~Wave %03d", i);
+            mpc::Param p = floatParam(id, nm, 0.0f, 1.0f, 0.0f, "", 2);
+            p.automatable = false;   // 128 bars: keep them out of automation lanes
+            addParam(p);
+        }
+
         if (numParams() != kNumParams) mpc::log("Hildegard: parameter count mismatch");
 
-        // Owned background thread for Save-to-disk (never writes files on the audio thread).
-        saveWorker_ = std::thread([this] { saveLoop(); });
+        // Owned background thread: Save-to-disk and display-parameter updates. Neither file
+        // writing nor host notification ever happens on the audio thread.
+        saveWorker_ = std::thread([this] { workerLoop(); });
     }
 
     ~Hildegard() override
@@ -353,7 +394,11 @@ public:
                 if (recLen_ < (int)recFade) { const float g = recLen_ / recFade; rl *= g; rr *= g; }
                 back.L[(size_t)recLen_] = rl;
                 back.R[(size_t)recLen_] = rr;
-                if (++recLen_ >= kMaxFrames) finishRecording();
+                if (++recLen_ >= kMaxFrames)
+                {
+                    finishRecording();
+                    bufferFullEvents_.fetch_add(1, std::memory_order_relaxed);   // status: "Buffer full"
+                }
             }
 
             // ----- Save capture: bounce the effected OUTPUT (what you hear) for one chunk length -----
@@ -374,11 +419,20 @@ public:
         }
 
         wasPlaying_ = playing;
+
+        // Publish state for the UI worker (lock-free; it turns these into display params).
+        const int flenNow = chunk_[front_].length;
+        for (int s = 0; s < kNumStreams; ++s)
+            posOut_[s].store(flenNow > 1 ? (float)(streams_[s].head / (double)(flenNow - 1)) : 0.0f,
+                             std::memory_order_relaxed);
+        hasChunkOut_.store(flenNow > 0, std::memory_order_relaxed);
+        recordingOut_.store(recording_, std::memory_order_relaxed);
+        capturingOut_.store(capturing_, std::memory_order_relaxed);
     }
 
     bool formatValue(int index, float plain, std::string& out) override
     {
-        if (index < kNumGlobal) return false;
+        if (index < kNumGlobal || index >= kNumUser) return false;
         const int off = (index - kNumGlobal) % kPerStream;
         char buf[32];
         if (off == oSpeed) { std::snprintf(buf, sizeof(buf), "%.2fx", (double)plain); out = buf; return true; }
@@ -432,7 +486,9 @@ private:
             s.started = false;   // re-place at in/out point against the new chunk
         }
         front_ = 1 - front_;
-        swapFade_ = 0.0f;                                   // fade the wet back in after the swap
+        frontOut_.store(front_, std::memory_order_relaxed);
+        waveGen_.fetch_add(1, std::memory_order_release);   // UI worker recomputes the waveform
+        swapFade_ = 0.0f;                                 // fade the wet back in after the swap
         swapRamp_ = 1.0f / std::max(1.0f, msToSamples(kSwapFadeMs, sampleRate_));
         swapRising_ = true;
 
@@ -459,23 +515,103 @@ private:
         if (save) { set(kSave, 0.0f); notifyHostParameterChanged(kSave); }   // momentary
     }
 
-    void saveLoop()
+    // ----- Background worker: Save-to-disk + display parameters -----
+    void workerLoop()
     {
         using namespace std::chrono_literals;
+        using Clock = std::chrono::steady_clock;
+        auto nextUi = Clock::now();
         while (!saveStop_.load(std::memory_order_acquire))
         {
             std::this_thread::sleep_for(5ms);
-            if (saveReq_.load(std::memory_order_acquire) >= 0) { doSave(); saveReq_.store(-1, std::memory_order_release); }
+            if (saveReq_.load(std::memory_order_acquire) >= 0)
+            {
+                const bool ok = doSave();
+                saveResultFailed_ = !ok;
+                saveResultAt_ = Clock::now();
+                haveSaveResult_ = true;
+                saveReq_.store(-1, std::memory_order_release);
+            }
+            const auto now = Clock::now();
+            if (now >= nextUi) { updateDisplay(now); nextUi = now + std::chrono::milliseconds(kUiPeriodMs); }
         }
+    }
+
+    // Write a display parameter and tell the host, but only when OUR value changed since we
+    // last wrote it (compared against `last`, not the live parameter), so the worker never
+    // fights the host when it writes these parameters itself, e.g. while restoring a project.
+    void publish(int index, float plain, float epsilon, float& last)
+    {
+        if (std::fabs(last - plain) <= epsilon) return;
+        last = plain;
+        set(index, plain);
+        notifyHostParameterChanged(index);
+    }
+
+    void updateDisplay(std::chrono::steady_clock::time_point now)
+    {
+        // Head positions (0-1 across the whole chunk). ~1/1000 of the chunk is far below a pixel.
+        for (int s = 0; s < kNumStreams; ++s)
+            publish(kPos0 + s, posOut_[s].load(std::memory_order_relaxed), 0.0008f, lastPos_[s]);
+
+        // Status, by priority: live activity first, then timed messages, then the idle state.
+        const unsigned full = bufferFullEvents_.load(std::memory_order_relaxed);
+        if (full != lastFullEvents_) { lastFullEvents_ = full; fullAt_ = now; haveFull_ = true; }
+        auto recent = [&](bool have, std::chrono::steady_clock::time_point t) {
+            return have && std::chrono::duration<double>(now - t).count() < kFlashSeconds;
+        };
+        int st;
+        if (recordingOut_.load(std::memory_order_relaxed))                                    st = stRecording;
+        else if (capturingOut_.load(std::memory_order_relaxed) || saveReq_.load(std::memory_order_acquire) >= 0) st = stSaving;
+        else if (recent(haveSaveResult_, saveResultAt_) && saveResultFailed_)                   st = stSaveFailed;
+        else if (recent(haveFull_, fullAt_))                                                    st = stBufferFull;
+        else if (recent(haveSaveResult_, saveResultAt_))                                        st = stSaved;
+        else st = hasChunkOut_.load(std::memory_order_relaxed) ? stReady : stPressRecord;
+        publish(kStatus, (float)st, 0.25f, lastStatus_);
+
+        // Waveform: recompute the 128 peaks once per new recording, then one page refresh.
+        const unsigned gen = waveGen_.load(std::memory_order_acquire);
+        if (gen != lastWaveGen_)
+        {
+            lastWaveGen_ = gen;
+            computeWave();
+            requestDisplayUpdate();
+        }
+    }
+
+    // Peak of each 1/128 slice of the front chunk, normalised so the loudest slice is full height.
+    // Reads the front buffer while the audio thread may write the BACK one; if another swap
+    // happens mid-scan the picture is briefly wrong and the next generation redraws it.
+    void computeWave()
+    {
+        const Chunk& c = chunk_[frontOut_.load(std::memory_order_relaxed)];
+        const int len = c.length;
+        float peaks[kWaveBars] = {};
+        float top = 0.0f;
+        if (len > 0 && !c.L.empty())
+        {
+            for (int b = 0; b < kWaveBars; ++b)
+            {
+                const int i0 = (int)((int64_t)len * b / kWaveBars);
+                const int i1 = std::max(i0 + 1, (int)((int64_t)len * (b + 1) / kWaveBars));
+                float p = 0.0f;
+                for (int i = i0; i < i1 && i < len; ++i)
+                    p = std::max(p, std::max(std::fabs(c.L[(size_t)i]), std::fabs(c.R[(size_t)i])));
+                peaks[b] = p;
+                top = std::max(top, p);
+            }
+        }
+        const float scale = top > 1e-6f ? 1.0f / top : 0.0f;
+        for (int b = 0; b < kWaveBars; ++b) set(kWave0 + b, clamp(peaks[b] * scale, 0.0f, 1.0f));
     }
 
     // Write the captured bounce (already in saveBuf_) to disk. No audio-thread copy needed:
     // process() filled saveBuf_ before raising saveReq_, and no new capture can start until
-    // this completes (guarded by saveReq_/capturing_).
-    void doSave()
+    // this completes (guarded by saveReq_/capturing_). Returns false if nothing was written.
+    bool doSave()
     {
         const int len = saveBuf_.length;
-        if (len <= 0) return;
+        if (len <= 0) return false;
 
         const std::string file = timestampName();
         const uint32_t sr = (uint32_t)sampleRate_;
@@ -489,7 +625,7 @@ private:
             {
                 const std::string dir = root + "/Hildegard Loops";
                 MPC_MKDIR(dir.c_str());
-                if (writeWav24(uniquePath(dir, file), saveBuf_.L, saveBuf_.R, len, sr)) return;
+                if (writeWav24(uniquePath(dir, file), saveBuf_.L, saveBuf_.R, len, sr)) return true;
             }
         }
         // Fallback (SPEC 13.2): Content/Saved/ inside the plugin folder.
@@ -497,7 +633,9 @@ private:
         MPC_MKDIR(content.c_str());
         const std::string saved = content + "/Saved";
         MPC_MKDIR(saved.c_str());
-        writeWav24(uniquePath(saved, file), saveBuf_.L, saveBuf_.R, len, sr);
+        const bool ok = writeWav24(uniquePath(saved, file), saveBuf_.L, saveBuf_.R, len, sr);
+        if (!ok) mpc::log("Hildegard: Save failed (could not write the WAV)");
+        return ok;
     }
 
     static std::string timestampName()
@@ -658,6 +796,20 @@ private:
     bool              capturing_ = false;
     int               capLen_ = 0, capIdx_ = 0;
     Chunk             saveBuf_;        // the captured bounce, written by the worker
+
+    // Audio thread -> UI worker (display parameters). Written once per block or per event.
+    std::atomic<float>    posOut_[kNumStreams] = {};
+    std::atomic<bool>     hasChunkOut_{false}, recordingOut_{false}, capturingOut_{false};
+    std::atomic<int>      frontOut_{0};
+    std::atomic<unsigned> waveGen_{0}, bufferFullEvents_{0};
+
+    // UI-worker-only state.
+    unsigned lastWaveGen_ = 0;          // waveform recomputed only after a new recording
+    unsigned lastFullEvents_ = 0;
+    float    lastPos_[kNumStreams] = { -1.0f, -1.0f, -1.0f, -1.0f };   // -1 = never published
+    float    lastStatus_ = -1.0f;
+    bool     haveFull_ = false, haveSaveResult_ = false, saveResultFailed_ = false;
+    std::chrono::steady_clock::time_point fullAt_{}, saveResultAt_{};
 };
 
 MPC_PLUGIN_ENTRY(Hildegard)
