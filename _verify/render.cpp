@@ -37,10 +37,18 @@ static VstTimeInfo g_time;
 static double      g_pos = 0.0;
 static bool        g_playing = true;
 
-static VstIntPtr hostCb(AEffect*, VstInt32 opcode, VstInt32, VstIntPtr, void*, float)
+// Bar-sync test: the frame position at which the plugin turned Record off by itself
+// (it calls audioMasterAutomate(index 1) when a take ends).
+static double g_recordOffAt = -1.0;
+static double g_blockPos = 0.0;      // position of the block being processed
+
+static VstIntPtr hostCb(AEffect*, VstInt32 opcode, VstInt32 index, VstIntPtr, void*, float opt)
 {
     switch (opcode)
     {
+        case audioMasterAutomate:
+            if (index == 1 && opt < 0.5f && g_recordOffAt < 0.0) g_recordOffAt = g_blockPos;
+            return 0;
         case audioMasterVersion:       return 2400;
         case audioMasterGetSampleRate: return (VstIntPtr)kSR;
         case audioMasterGetBlockSize:  return kBlock;
@@ -152,6 +160,61 @@ int main(int argc, char** argv)
     std::printf("  item 3 (stop silences): %s\n", peakOf(tailL, tailR) < 0.01 ? "PASS" : "FAIL");
     std::printf("  item 2 (loop survives stop/resume): %s\n", peakOf(rL, rR) > 0.05 ? "PASS" : "FAIL");
 
+    // --- bar-synced recording (Length = N bars). 120 bpm 4/4: one bar = 2 s = 88200 frames. ---
+    // Position only advances while playing, like a real transport.
+    const int kLength = 0;
+    const double kBar = 88200.0;
+    auto runTo = [&](double target) {           // process blocks until g_pos >= target
+        while (g_pos < target) {
+            g_blockPos = g_pos;
+            for (int i = 0; i < kBlock; ++i) { inL[i] = 0.3f; inR[i] = 0.3f; }
+            e->processReplacing(e, ins, outs, kBlock);
+            if (g_playing) g_pos += kBlock;
+            else { static int idle = 0; if (++idle > 200) { idle = 0; break; } }
+        }
+    };
+    auto endBlockOk = [&](double expectEnd) {   // the take ends inside the block holding expectEnd-1
+        return g_recordOffAt >= 0.0 && g_recordOffAt <= expectEnd - 1 && expectEnd - 1 < g_recordOffAt + kBlock;
+    };
+    int barFails = 0;
+    auto report = [&](const char* what, bool ok) { std::printf("  bar-sync: %-52s %s\n", what, ok ? "PASS" : "FAIL"); if (!ok) ++barFails; };
+
+    disp(effMainsChanged, 0, 0); disp(effMainsChanged, 0, 1);
+    e->setParameter(e, kRecord, 0.0f);
+    e->setParameter(e, kLength, 0.2f);            // choice 1 of 0..5 = "1 bar"
+    g_playing = true;
+
+    // A) arm mid-bar while playing -> starts at the next bar line, ends 1 bar later.
+    g_pos = 4.0 * kBar + 30000.0;                 // 30000 frames into bar 5
+    g_recordOffAt = -1.0;
+    runTo(g_pos + kBlock);
+    e->setParameter(e, kRecord, 1.0f);            // arm
+    runTo(7.0 * kBar);
+    report("arm mid-bar: ends 1 bar after the next bar line", endBlockOk(6.0 * kBar));
+
+    // B) arm then cancel before the bar line -> nothing records, Record never auto-releases.
+    g_pos = 8.0 * kBar + 10000.0;
+    g_recordOffAt = -1.0;
+    e->setParameter(e, kRecord, 1.0f);            // arm
+    runTo(g_pos + 20000.0);
+    e->setParameter(e, kRecord, 0.0f);            // cancel
+    runTo(11.0 * kBar);
+    report("arm then cancel: no take", g_recordOffAt < 0.0);
+
+    // C) arm with the transport stopped -> waits; Play from bar 1 starts at once; 2 bars.
+    e->setParameter(e, kLength, 0.4f);            // choice 2 = "2 bars"
+    g_playing = false; g_pos = 0.0;
+    g_recordOffAt = -1.0;
+    e->setParameter(e, kRecord, 1.0f);            // arm while stopped
+    runTo(1e9);                                   // stopped: runs 200 idle blocks then returns
+    const bool waited = g_recordOffAt < 0.0;
+    g_playing = true;
+    runTo(3.0 * kBar);
+    report("armed while stopped waits for Play", waited);
+    report("Play from bar 1: 2-bar take ends at bar 3", endBlockOk(2.0 * kBar));
+
+    std::printf("  bar-sync: %s\n", barFails == 0 ? "ALL PASS" : "FAILURES");
+
     disp(effMainsChanged, 0, 0);
     disp(effClose);
 
@@ -188,5 +251,5 @@ int main(int argc, char** argv)
         std::fclose(f);
         std::printf("wrote %s\n", argv[2]);
     }
-    return bad ? 1 : 0;
+    return (bad || barFails) ? 1 : 0;
 }

@@ -20,8 +20,9 @@
 //     loop + ping-pong with declick crossfades, tilt tone, equal-power pan, perceptual
 //     volume, muting, dry/wet, wet soft clip, parameter smoothing, transport-follow,
 //     save-to-disk, and the display parameters (head positions, status, waveform).
-//   Deliberately NOT here yet (later build-order steps): bar-synced record, Resample
-//     timing polish, the speed-knob snapping curve and project-chunk state. Speed is a
+//   Also: bar-synced record (Length = N bars: arm, start on the next bar line, stop
+//     after N bars).
+//   Deliberately NOT here yet (later build-order steps): Resample timing polish, the speed-knob snapping curve and project-chunk state. Speed is a
 //     plain linear parameter for now.
 //
 // Display parameters are written by a background "UI worker" thread (the same thread
@@ -293,7 +294,7 @@ public:
         // IMPORTANT: do NOT reset front_ or the chunk lengths here. reset() runs on every
         // transport stop/suspend and after a state load; zeroing front_ orphaned the user's
         // recorded loop (it pointed at the empty buffer). The chunk must survive.
-        recording_ = recPrev_ = false;
+        recording_ = recPrev_ = armed_ = false;
         recLen_ = 0;
         capturing_ = false;                       // abort any in-progress save capture
         swapFade_ = 1.0f; swapRamp_ = 0.0f; swapRising_ = false;
@@ -319,7 +320,8 @@ public:
         if (playEdge) for (Stream& s : streams_) s.started = false;   // re-seek to in/out on start
 
         // ----- per-block setup (all transcendentals happen here, once) -----
-        handleRecordButton();
+        handleRecordButton(tr);
+        const int armStart = armedStartFrame(tr, playing, n);   // -1 = no bar line in this block
         handleSaveButton();
         { float gD, gW; equalPowerMix(get(kDryWet) * 0.01f, gD, gW); dryS_.setTarget(gD); wetS_.setTarget(gW); }
         const bool resample = getBool(kResample);
@@ -386,18 +388,22 @@ public:
             const float yL = dryL * gDry + wetL * gWet;
             const float yR = dryR * gDry + wetR * gWet;
 
+            // ----- bar-synced start: armed, and this frame is the bar line -----
+            if (i == armStart) { armed_ = false; recording_ = true; recLen_ = 0; recTarget_ = armTarget_; }
+
             // ----- recording (input, or the output when Resample is on) -----
-            if (recording_ && recLen_ < kMaxFrames)
+            if (recording_ && recLen_ < recTarget_)
             {
                 float rl = resample ? yL : dryL;
                 float rr = resample ? yR : dryR;
                 if (recLen_ < (int)recFade) { const float g = recLen_ / recFade; rl *= g; rr *= g; }
                 back.L[(size_t)recLen_] = rl;
                 back.R[(size_t)recLen_] = rr;
-                if (++recLen_ >= kMaxFrames)
+                if (++recLen_ >= recTarget_)
                 {
-                    finishRecording();
-                    bufferFullEvents_.fetch_add(1, std::memory_order_relaxed);   // status: "Buffer full"
+                    finishRecording();   // N bars done, or the 30 s buffer is full
+                    if (recLen_ >= kMaxFrames)
+                        bufferFullEvents_.fetch_add(1, std::memory_order_relaxed);   // status: "Buffer full"
                 }
             }
 
@@ -427,6 +433,7 @@ public:
                              std::memory_order_relaxed);
         hasChunkOut_.store(flenNow > 0, std::memory_order_relaxed);
         recordingOut_.store(recording_, std::memory_order_relaxed);
+        armedOut_.store(armed_, std::memory_order_relaxed);
         capturingOut_.store(capturing_, std::memory_order_relaxed);
     }
 
@@ -454,16 +461,68 @@ public:
     }
 
 private:
-    void handleRecordButton()
+    // ----- Record (SPEC 3.2) -----
+    // Record is a TOGGLE, not a momentary button: it stays ON (lit) while armed or recording.
+    //   Length = Free:    tap on = start now; tap off = stop. Auto-stops at 30 s.
+    //   Length = N bars:  tap on = ARM; recording starts on the next bar line of the MPC
+    //                     transport (waits for Play if it is stopped) and stops itself after
+    //                     N bars at the tempo of that moment (capped at 30 s). Tap off while
+    //                     armed = cancel; while recording = stop early.
+    //   No usable tempo/position from the host: N bars behaves like Free.
+    static bool barSyncAvailable(const mpc::Transport& tr)
     {
-        // Record is a TOGGLE, not a momentary button: it stays ON (lit) for as long as the
-        // user is recording, so they can hold a chunk of any length up to the 30 s limit.
-        // Tap on = start; tap off = stop. (The real plugin's lit "recording" look will come
-        // from a status film strip; until then the button value itself shows the state.)
+        return tr.valid && tr.tempoValid && tr.ppqValid && tr.bpm > 1.0;
+    }
+
+    static double quartersPerBar(const mpc::Transport& tr)
+    {
+        const int num = tr.timeSigNumerator > 0 ? tr.timeSigNumerator : 4;
+        const int den = tr.timeSigDenominator > 0 ? tr.timeSigDenominator : 4;
+        return 4.0 * num / den;
+    }
+
+    void handleRecordButton(const mpc::Transport& tr)
+    {
+        static const int kBars[] = { 0, 1, 2, 4, 8, 16 };   // matches the Length choices
         const bool rec = getBool(kRecord);
-        if (rec && !recPrev_)        { if (!recording_) { recording_ = true; recLen_ = 0; } }  // start
-        else if (!rec && recPrev_)   { if (recording_) finishRecording(); }                     // stop
+        if (rec && !recPrev_ && !recording_ && !armed_)
+        {
+            const int bars = kBars[clamp(getInt(kLength), 0, 5)];
+            if (bars == 0 || !barSyncAvailable(tr)) { recording_ = true; recLen_ = 0; recTarget_ = kMaxFrames; }
+            else                                    { armed_ = true; armBars_ = bars; }
+        }
+        else if (!rec && recPrev_)
+        {
+            if (armed_)          armed_ = false;     // cancel
+            else if (recording_) finishRecording();  // stop (early, for bar-synced)
+        }
         recPrev_ = rec;
+    }
+
+    // If armed and the transport crosses a bar line inside this block, return that frame
+    // and set armTarget_ (N bars in frames at the current tempo). Otherwise -1.
+    int armedStartFrame(const mpc::Transport& tr, bool playing, int n)
+    {
+        if (!armed_ || !playing) return -1;
+        if (!barSyncAvailable(tr))   // tempo vanished while armed: start now, like Free
+        {
+            armTarget_ = kMaxFrames;
+            return 0;
+        }
+        const double qpb = quartersPerBar(tr);
+        const double framesPerQuarter = sampleRate_ * 60.0 / tr.bpm;
+        double barPos = tr.ppqPos - tr.barStartPpq;   // quarters since the current bar line
+        if (barPos < 0.0 || barPos >= qpb + 1e-9) barPos = std::fmod(std::fmax(tr.ppqPos, 0.0), qpb);
+
+        double toBar = (qpb - barPos) * framesPerQuarter;      // frames to the next bar line
+        if (barPos * framesPerQuarter < 1.0) toBar = 0.0;      // already sitting on a bar line
+        const int f = (int)std::ceil(toBar - 1e-6);
+        if (f >= n) return -1;
+
+        armTarget_ = (int)std::min<double>((double)kMaxFrames,
+                                           std::round(armBars_ * qpb * framesPerQuarter));
+        if (armTarget_ < 1) armTarget_ = 1;
+        return std::max(0, f);
     }
 
     void finishRecording()
@@ -562,6 +621,7 @@ private:
         };
         int st;
         if (recordingOut_.load(std::memory_order_relaxed))                                    st = stRecording;
+        else if (armedOut_.load(std::memory_order_relaxed))                                   st = stArmed;
         else if (capturingOut_.load(std::memory_order_relaxed) || saveReq_.load(std::memory_order_acquire) >= 0) st = stSaving;
         else if (recent(haveSaveResult_, saveResultAt_) && saveResultFailed_)                   st = stSaveFailed;
         else if (recent(haveFull_, fullAt_))                                                    st = stBufferFull;
@@ -777,6 +837,9 @@ private:
 
     bool recording_ = false, recPrev_ = false;
     int  recLen_ = 0;
+    int  recTarget_ = kMaxFrames;   // frames this take will last (N bars, or 30 s for Free)
+    bool armed_ = false;            // bar-synced: waiting for the next bar line
+    int  armBars_ = 0, armTarget_ = kMaxFrames;
 
     float swapFade_ = 1.0f, swapRamp_ = 0.0f;
     bool  swapRising_ = false;
@@ -799,7 +862,7 @@ private:
 
     // Audio thread -> UI worker (display parameters). Written once per block or per event.
     std::atomic<float>    posOut_[kNumStreams] = {};
-    std::atomic<bool>     hasChunkOut_{false}, recordingOut_{false}, capturingOut_{false};
+    std::atomic<bool>     hasChunkOut_{false}, recordingOut_{false}, armedOut_{false}, capturingOut_{false};
     std::atomic<int>      frontOut_{0};
     std::atomic<unsigned> waveGen_{0}, bufferFullEvents_{0};
 
