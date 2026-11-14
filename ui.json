@@ -1,0 +1,33 @@
+{
+  "pages": [
+    {
+      "name": "GLOBAL",
+      "controls": [
+        { "param": "Record", "widget": "switch" },
+        { "param": "Resample", "widget": "switch" },
+        { "param": "Save", "widget": "switch" },
+        "Length",
+        "Dry/Wet"
+      ]
+    },
+    {
+      "name": "MIX",
+      "controls": [
+        "Speed 1", "Tone 1", "Pan 1", "Volume 1",
+        "Speed 2", "Tone 2", "Pan 2", "Volume 2",
+        "Speed 3", "Tone 3", "Pan 3", "Volume 3",
+        "Speed 4", "Tone 4", "Pan 4", "Volume 4"
+      ]
+    },
+    {
+      "name": "LOOP",
+      "controls": [
+        "In 1", "Out 1", { "param": "Mode 1", "widget": "switch" }, { "param": "Mute 1", "widget": "switch" },
+        "In 2", "Out 2", { "param": "Mode 2", "widget": "switch" }, { "param": "Mute 2", "widget": "switch" },
+        "In 3", "Out 3", { "param": "Mode 3", "widget": "switch" }, { "param": "Mute 3", "widget": "switch" },
+        "In 4", "Out 4", { "param": "Mode 4", "widget": "switch" }, { "param": "Mute 4", "widget": "switch" }
+      ]
+    }
+  ],
+  "style": { "background": "ff161618", "accent": "ffEF9F27", "text": "ffffffff", "muted": "ff6a6a6c" }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Hildegard",
+  "manufacturer": "Building on Fire",
+  "version": "0.1.0",
+  "format": "vst2",
+  "kind": "effect",
+  "uid": "BfHg",
+  "category": "Delay",
+  "numInputs": 2,
+  "numOutputs": 2,
+  "file32": "VST/hildegard-arm32.so",
+  "file64": "VST/hildegard-arm64.so",
+  "description": "Records a chunk of your track and plays it back through four tape-style playheads with independent speed, direction, loop, tone, pan and volume.",
+  "author": "Building on Fire",
+  "url": "https://github.com/buildingonfire/hildegard",
+  "license": "MIT"
+}
