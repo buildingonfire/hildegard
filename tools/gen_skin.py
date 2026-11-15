@@ -387,8 +387,16 @@ def label(kind, ts, handle="Data", text=None):
     return d
 
 
+def fixed_text(text):
+    """Fixed text as a Name label. The MPC (Live III, OS 3.10.1) does NOT draw Label type "Text"
+    at all, but Name labels draw, so override a parameter's name with WithName[...].
+    Parameter 0 is always valid, so the label never hides. Keep text ASCII and free of ']'."""
+    assert "]" not in text and all(ord(c) < 128 for c in text), text
+    return "WithName[%s]/%s" % (text, P(0))
+
+
 def text_entry(name, text, r, ts, show_if=None):
-    return entry(name, "Label", label("Text", ts, "Invalid", text), r, show_if=show_if)
+    return entry(name, "Label", label("Name", ts, fixed_text(text)), r, show_if=show_if)
 
 
 def value_entry(name, handle, r, ts, show_if=None):
@@ -528,9 +536,9 @@ def stream_header(s, imgs):
     r = rect(x, NAME_Y, COL_W, NAME_H)
     return [
         entry("stream%d_mute" % (s + 1), "Button", btn, r, focus="Yes"),
-        text_entry("stream%d_active" % (s + 1), "Stream %d – Active" % (s + 1), r,
+        text_entry("stream%d_active" % (s + 1), "Stream %d - Active" % (s + 1), r,
                    text_style(22, DARK_TEXT, "horizontallyCentred verticallyCentred", "SemiBold"), show_if=active(s)),
-        text_entry("stream%d_muted" % (s + 1), "Stream %d – Muted" % (s + 1), r,
+        text_entry("stream%d_muted" % (s + 1), "Stream %d - Muted" % (s + 1), r,
                    text_style(22, TEXT, "horizontallyCentred verticallyCentred", "SemiBold"), show_if=muted(s)),
     ]
 
@@ -605,8 +613,8 @@ def length_tile():
          entry("cap", "Label", label("Name", CAPTION(True)), rect(20, 16, 260, 30)),
          entry("value", "Label", label("Value", text_style(46, TEXT, "horizontallyCentred verticallyCentred", "SemiBold")),
                rect(10, 58, 280, 72)),
-         entry("hint", "Label", label("Text", text_style(18, TEXT_DIM, "horizontallyCentred verticallyCentred"),
-                                      "Invalid", "Tap to choose"), rect(10, 150, 280, 28))],
+         entry("hint", "Label", label("Name", text_style(18, TEXT_DIM, "horizontallyCentred verticallyCentred"),
+                                      fixed_text("Tap to choose")), rect(10, 150, 280, 28))],
         actions=[action("Mouse Down", "Show Overlay", extra="menu overlay"),
                  action("Enter Pressed", "Show Overlay", extra="menu overlay")],
         background=argb(PANEL), focus_bg=argb(PANEL_FOCUS))
