@@ -102,6 +102,9 @@ SLOT_H = 84
 LEN_BW, LEN_BH = 88, 58
 LEN_BX = [12, 106, 200]      # inside the 300 x 196 tile
 LEN_BY = [58, 126]
+# Mode slot: three buttons across the 268 px inner width.
+MODE_BW = 84
+MODE_BX = [16, 108, 200]
 # Speed Scale tile (bottom right, where Status was): three stacked radio buttons.
 SCALE_BW, SCALE_BH = 276, 42
 SCALE_BY = [52, 100, 148]
@@ -255,19 +258,22 @@ def make_images():
     c.rrect(0, 0, COL_W, NAME_H, 7, MUTED_BTN)
     imgs["name_muted"] = c.save("name_muted.png")
 
-    # Mode buttons: loop icon and ping-pong icon, 130 x 36.
-    MW, MH = 130, 36
+    # Mode buttons: forward loop, reverse loop, ping-pong; MODE_BW x 36.
+    MW, MH = MODE_BW, 36
 
     def mode_btn(kind, bg, fg):
         c = Canvas(MW, MH)
         c.rrect(0, 0, MW, MH, 6, bg)
         cx, cy = MW / 2.0, MH / 2.0
-        if kind == "loop":
-            # A closed loop (stadium outline) with an arrowhead on the top run, pointing right.
+        if kind in ("fwd", "rev"):
+            # A closed loop (stadium outline) with an arrowhead on the top run: right = forward.
             x0, x1, y0, y1, t = cx - 22, cx + 22, cy - 9, cy + 9, 2.6
             c.rrect(x0, y0, x1, y1, 9, fg)
             c.rrect(x0 + t, y0 + t, x1 - t, y1 - t, 9 - t, bg)
-            c.tri((cx + 5, y0 - 5), (cx + 5, y0 + 5.6), (cx + 12, y0 + 0.3), fg)
+            if kind == "fwd":
+                c.tri((cx + 5, y0 - 5), (cx + 5, y0 + 5.6), (cx + 12, y0 + 0.3), fg)
+            else:
+                c.tri((cx - 5, y0 - 5), (cx - 5, y0 + 5.6), (cx - 12, y0 + 0.3), fg)
         else:
             # |<->| : end stops and a double-headed arrow between them.
             x0, x1 = cx - 24, cx + 24
@@ -278,7 +284,7 @@ def make_images():
             c.tri((x1 - 4, cy), (x1 - 12, cy - 6), (x1 - 12, cy + 6), fg)
         return c
 
-    for kind in ("loop", "pp"):
+    for kind in ("fwd", "rev", "pp"):
         imgs[kind + "_off"] = mode_btn(kind, TRACK, TEXT_DIM).save("mode_%s_off.png" % kind)
         imgs[kind + "_offdim"] = mode_btn(kind, TRACK, TEXT_DIMMER).save("mode_%s_off_dim.png" % kind)
         for s in range(4):
@@ -485,20 +491,17 @@ def control_slot(s, bipolar, lit):
 
 def mode_slot(s, lit, imgs):
     k = "%d" % s
-    on_l = imgs[("loop_on" if lit else "loop_ondim") + k]
-    on_p = imgs[("pp_on" if lit else "pp_ondim") + k]
-    off_l = imgs["loop_off" if lit else "loop_offdim"]
-    off_p = imgs["pp_off" if lit else "pp_offdim"]
-    txt = TEXT_DIM if lit else TEXT_DIMMER
+    kinds = ("fwd", "rev", "pp")                 # buttonId 0/1/2 = Forward / Reverse / Ping-pong
 
-    def btn(on, off, bid):
-        return {"version": 2, "onImage": on, "offImage": off, "buttonId": bid, "numButtonsInGroup": 2,
+    def btn(kind, bid):
+        on = imgs[("%s_on" if lit else "%s_ondim") % kind + k]
+        off = imgs[("%s_off" if lit else "%s_offdim") % kind]
+        return {"version": 2, "onImage": on, "offImage": off, "buttonId": bid, "numButtonsInGroup": 3,
                 "handleName": "Data", "gestureBehaviour": "Instant"}
     # Caption (tab-level, centred) on top; the lit button shows the value, so no value label.
     return component(
-        [focus_ring(COL_W, SLOT_H, STREAM_RGB[s]),
-         entry("loop", "Button", btn(on_l, off_l, 0), rect(16, 38, 130, 36)),
-         entry("pingpong", "Button", btn(on_p, off_p, 1), rect(154, 38, 130, 36))],
+        [focus_ring(COL_W, SLOT_H, STREAM_RGB[s])] +
+        [entry(kind, "Button", btn(kind, i), rect(MODE_BX[i], 38, MODE_BW, 36)) for i, kind in enumerate(kinds)],
         actions=[action("Mouse Down", "Q-Link")],   # no menu: MenuOverlay draws empty on device
         background=argb(PANEL), focus_bg=argb(PANEL_FOCUS))
 
@@ -643,8 +646,8 @@ def record_tab():
         return out
 
     kids += toggle_tile(COL_X[0], P_RECORD, "rec", "Record", "Recording", "Records the input", "Tap to stop")
-    kids += toggle_tile(COL_X[1], P_RESAMPLE, "resample", "Resample", "Resample",
-                        "Records the current loop", "Records the current loop")
+    kids += toggle_tile(COL_X[1], P_RESAMPLE, "resample", "Resample", "Resampling",
+                        "Records input + loop", "Tap to stop")
     kids += toggle_tile(COL_X[2], P_SAVE, "save", "Save", "Save", "Bounce to Hildegard Loops", "Bounce to Hildegard Loops")
     kids.append(custom("lengthTile", rect(COL_X[3], TY, 300, TH), [("Data", P(P_LENGTH))], focus="Yes"))
     kids += choice_grid("len", P_LENGTH, LENGTH_CHOICES,
@@ -706,12 +709,12 @@ def tui():
     repl = [(P_LENGTH, LENGTH_CHOICES), (P_RECORD, ["Off", "On"]), (P_RESAMPLE, ["Off", "On"]),
             (P_SAVE, ["Off", "On"])]
     for s in range(4):
-        repl += [(sp(s, O_MODE), ["Loop", "Ping-pong"]), (sp(s, O_MUTE), ["Active", "Muted"])]
+        repl += [(sp(s, O_MODE), ["Forward", "Reverse", "Ping-pong"]), (sp(s, O_MUTE), ["Active", "Muted"])]
     repl.append((P_STATUS, STATUS_CHOICES))
     repl.append((P_SCALE, SCALE_CHOICES))
 
     # Loop: In, Out, Mode, Speed.  Mix: Tone, Pan, Volume, (empty).  docs/UI-LAYOUT.md
-    loop_rows = [("In", O_IN, "uni"), ("Out", O_OUT, "uni"), ("Mode", O_MODE, "mode"), ("Speed Ratio", O_SPEED, "bi")]
+    loop_rows = [("In", O_IN, "uni"), ("Out", O_OUT, "uni"), ("Mode", O_MODE, "mode"), ("Speed Ratio", O_SPEED, "uni")]
     mix_rows = [("Tone", O_TONE, "bi"), ("Pan", O_PAN, "bi"), ("Volume", O_VOLUME, "uni"), None]
 
     return {"pageData": {

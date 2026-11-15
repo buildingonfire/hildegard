@@ -226,8 +226,8 @@ int main(int argc, char** argv)
         disp(effGetParamDisplay, 5, 0, buf);
         return std::string(buf);
     };
-    // knob x in -8..8 -> norm = (x + 8) / 16
-    auto nx = [](double x) { return (float)((x + 8.0) / 16.0); };
+    // knob x in 0..8 (unipolar since 2026-11-15) -> norm = x / 8
+    auto nx = [](double x) { return (float)(x / 8.0); };
     // Speed Scale (param 170): Octaves = 0, Ratios = 0.5, Smooth = 1 (normalised choice index).
     const int kScale = 170;
     e->setParameter(e, kScale, 0.0f);   // Octaves (default)
@@ -236,13 +236,13 @@ int main(int argc, char** argv)
     check("octaves: x=0.5 -> 0.25x",                 speedText(nx(0.5))  == "0.25x  - 2 octaves");
     check("octaves: x=2.1 -> 1.00x",                 speedText(nx(2.1))  == "1.00x  unison");
     check("octaves: x=3 (1.5x smooth) -> 2.00x",     speedText(nx(3.0))  == "2.00x  + 1 octave");
-    check("octaves: x=-4.1 -> -2.00x",               speedText(nx(-4.1)) == "-2.00x  + 1 octave");
+    check("octaves: x=4.1 -> 2.00x",                 speedText(nx(4.1))  == "2.00x  + 1 octave");
     check("octaves: full right = 4.00x (cap)",       speedText(1.0f)     == "4.00x  + 2 octaves");
     e->setParameter(e, kScale, 0.5f);   // Ratios
     check("ratios: x=3 -> 1.50x",                    speedText(nx(3.0))  == "1.50x  + 1 fifth");
     check("ratios: x=1.4 (0.7x smooth) -> 0.67x",    speedText(nx(1.4))  == "0.67x  - 1 fifth");
     check("ratios: x=5 (2.5x smooth) -> 3.00x",      speedText(nx(5.0))  == "3.00x  + 1 octave & a fifth");
-    check("ratios: x=-1.5 (0.75x smooth) -> -0.67x", speedText(nx(-1.5)) == "-0.67x  - 1 fifth");
+    check("ratios: x=1.5 (0.75x smooth) -> 0.67x",   speedText(nx(1.5))  == "0.67x  - 1 fifth");
     check("ratios: x=0.667 (1/3) -> octave & fifth down", speedText(nx(0.667)) == "0.33x  - 1 octave & a fifth");
     check("ratios: x=0.25 (1/8) -> 3 octaves down",       speedText(nx(0.25))  == "0.12x  - 3 octaves");
     e->setParameter(e, kScale, 1.0f);   // Smooth
@@ -251,13 +251,13 @@ int main(int argc, char** argv)
     check("smooth: x=3 -> 1.50x",                    speedText(nx(3.0))  == "1.50x");
     e->setParameter(e, kScale, 0.0f);   // back to Octaves for the tests below
     {
-        // default of a fresh instance: Speed 1 = 1x, Speed 3 = -1x
+        // default of a fresh instance: Speed 1 = 1x Forward, Speed 3 = 1x Reverse (direction is Mode)
         AEffect* e2 = entry(&hostCb);
         char b1[64] = {0}, b3[64] = {0};
         e2->dispatcher(e2, effOpen, 0, 0, nullptr, 0.0f);
         e2->dispatcher(e2, effGetParamDisplay, 5, 0, b1, 0.0f);
         e2->dispatcher(e2, effGetParamDisplay, 5 + 2 * 8, 0, b3, 0.0f);
-        check("speed: defaults read 1.00x and -1.00x", std::string(b1) == "1.00x  unison" && std::string(b3) == "-1.00x  unison");
+        check("speed: defaults read 1.00x and 1.00x", std::string(b1) == "1.00x  unison" && std::string(b3) == "1.00x  unison");
         e2->dispatcher(e2, effClose, 0, 0, nullptr, 0.0f);
     }
     e->setParameter(e, 5, nx(2.0));
@@ -407,13 +407,15 @@ int main(int argc, char** argv)
         e->setParameter(e, 6, 0.5f);
     }
 
-    // Live speed sign (device bug 2026-11-15): turning Speed negative WHILE playing must reverse
-    // the head. Watch stream 1's displayed position (param 37) move forward, then backward.
+    // Direction is Mode (2026-11-15): switching stream 1 to Reverse WHILE playing must turn the
+    // head around. Watch stream 1's displayed position (param 37) move forward, then backward.
     {
         g_playing = true;
         for (int s = 0; s < 4; ++s) e->setParameter(e, muteIdx(s), s == 0 ? 0.0f : 1.0f);
-        auto stepsUp = [&](float speedNorm) {     // count forward vs backward moves of pos1
-            e->setParameter(e, 5, speedNorm);
+        const int kMode1 = 5 + 6;                 // Mode 1: 0 Forward, 0.5 Reverse, 1 Ping-pong
+        e->setParameter(e, 5, nx(2.1));           // Speed 1 = 1x
+        auto stepsUp = [&](float modeNorm) {      // count forward vs backward moves of pos1
+            e->setParameter(e, kMode1, modeNorm);
             int up = 0, down = 0;
             for (int b = 0; b < 30; ++b) { for (int i = 0; i < kBlock; ++i) inL[i] = inR[i] = 0.0f; e->processReplacing(e, ins, outs, kBlock); }
             float prev = e->getParameter(e, 37);
@@ -426,10 +428,36 @@ int main(int argc, char** argv)
             }
             return up - down;
         };
-        const int fwd = stepsUp(nx(2.1));          // +1x
-        const int rev = stepsUp(nx(-2.1));         // -1x, changed while playing
-        std::printf("  speed sign: +1x net steps %d, -1x net steps %d\n", fwd, rev);
-        check("speed: turning Speed negative while playing reverses the head", fwd > 4 && rev < -4);
+        const int fwd = stepsUp(0.0f);             // Forward
+        const int rev = stepsUp(0.5f);             // Reverse, switched while playing
+        std::printf("  mode: Forward net steps %d, Reverse net steps %d\n", fwd, rev);
+        check("mode: switching to Reverse while playing turns the head around", fwd > 4 && rev < -4);
+        e->setParameter(e, kMode1, 0.0f);
+    }
+
+    // Resample records WHAT YOU HEAR, Record records the INPUT. With the input silent and the
+    // loop playing, a Record take is silent but a Resample take is not.
+    {
+        const int kResample = 2, kLength = 0;
+        e->setParameter(e, kLength, 0.0f);         // Free
+        e->setParameter(e, kDryWet, 1.0f);         // all wet: you hear only the streams
+        auto takePeak = [&](int button) {
+            e->setParameter(e, button, 1.0f);
+            for (int b = 0; b < 40; ++b) { for (int i = 0; i < kBlock; ++i) inL[i] = inR[i] = 0.0f; e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock; }
+            e->setParameter(e, button, 0.0f);      // stop -> swap in the new take
+            double pk = 0.0;                       // then listen to it
+            for (int b = 0; b < 60; ++b) {
+                for (int i = 0; i < kBlock; ++i) inL[i] = inR[i] = 0.0f;
+                e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock;
+                if (b >= 20) for (int i = 0; i < kBlock; ++i) pk = std::fmax(pk, std::fabs((double)outL[i]));
+            }
+            return pk;
+        };
+        const double rs = takePeak(kResample);     // resample the playing loop
+        const double rc = takePeak(kRecord);       // record silence over it
+        std::printf("  resample: after Resample take peak %.4f, after Record (silent input) take peak %.4f\n", rs, rc);
+        check("resample: a Resample take captures the playing loop", rs > 0.01);
+        check("resample: a Record take with silent input is silent", rc < 0.001);
     }
 
     std::printf("  other checks: %s\n", otherFails == 0 ? "ALL PASS" : "FAILURES");

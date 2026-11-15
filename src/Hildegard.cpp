@@ -76,6 +76,7 @@ namespace {
 // ---------------------------------------------------------------------------
 enum Global { kLength = 0, kRecord, kResample, kDryWet, kSave, kNumGlobal };
 enum StreamOff { oSpeed = 0, oTone, oPan, oVolume, oIn, oOut, oMode, oMute, kPerStream };
+enum StreamMode { kModeForward = 0, kModeReverse, kModePingPong };   // per-stream Mode choices
 
 constexpr int kNumStreams = 4;
 constexpr int kNumUser    = kNumGlobal + kNumStreams * kPerStream;   // 5 + 32 = 37
@@ -217,21 +218,21 @@ inline float sampleAt(const std::vector<float>& buf, int len, double pos)
 struct PlayHead
 {
     double pos = 0.0;
-    int    dir = 1;                         // ping-pong leg: +1 / -1 (always +1 in Loop mode)
-    int    move = 1;                        // actual travel direction = dir * sign(speed)
+    int    dir = 1;                         // ping-pong leg: +1 / -1
+    int    move = 1;                        // actual travel direction this frame
     float  a = 0.0f, b = 0.0f, xf = 0.0f;   // loop region and loop crossfade length
-    int    mode = 0;                        // 0 = Loop, 1 = Ping-pong
+    int    mode = kModeForward;             // Forward / Reverse / Ping-pong
 };
 
-// Read one stereo sample. In Loop mode, the last `xf` frames before the region end are
-// equal-power crossfaded with the region start, so the loop point is seamless (~10% of the
+// Read one stereo sample. In Forward/Reverse, the last `xf` frames before the wrap point are
+// equal-power crossfaded with the other end, so the loop point is seamless (~10% of the
 // loop runtime). sqrt() is a cheap hardware op and only runs inside the fade zone.
 inline void readHead(const PlayHead& h, const Chunk& c, int len, float& outL, float& outR)
 {
     const double hp = h.pos, a = h.a, b = h.b, xf = h.xf;
     float mL = sampleAt(c.L, len, hp);
     float mR = sampleAt(c.R, len, hp);
-    if (h.mode == 0 && xf > 1.0)
+    if (h.mode != kModePingPong && xf > 1.0)
     {
         if (h.move > 0 && hp > b - xf)
         {
@@ -253,16 +254,17 @@ inline void readHead(const PlayHead& h, const Chunk& c, int len, float& outL, fl
     outL = mL; outR = mR;
 }
 
-// Advance and wrap. The sign of `speed` is live: turning Speed through zero reverses the
-// head. Loop mode travels by the sign alone; ping-pong flips its leg (dir) at each end, and
-// a negative speed runs both legs backwards. Loop wrapping accounts for the crossfade length.
+// Advance and wrap. Speed is unipolar (>= 0); direction comes from Mode alone (2026-11-15:
+// a bipolar speed plus ping-pong made "turn right" sometimes mean slower). Switching between
+// Forward and Reverse turns the head around in place. Wrapping accounts for the crossfade.
 inline void advanceHead(PlayHead& h, float speed, int len)
 {
-    if (h.mode == 0) h.dir = 1;
-    h.move = speed < 0.0f ? -h.dir : h.dir;
+    if (h.mode == kModeForward)      h.dir = +1;
+    else if (h.mode == kModeReverse) h.dir = -1;
+    h.move = h.dir;
     h.pos += (double)std::fabs(speed) * h.move;
     const double a = h.a, b = h.b, xf = h.xf;
-    if (h.mode == 0)   // Loop
+    if (h.mode != kModePingPong)   // Forward / Reverse loop
     {
         if (h.move > 0 && h.pos >= b)      h.pos = (a + xf) + (h.pos - b);
         else if (h.move < 0 && h.pos <= a) h.pos = (b - xf) - (a - h.pos);
@@ -396,21 +398,23 @@ public:
         addParam(boolParam  ("save",     "Save",     false));
 
         // ----- Per stream (5-36) -----
-        static const float defSpeed[4] = { 1.0f, 0.5f, -1.0f, 2.0f };
+        static const float defSpeed[4] = { 1.0f, 0.5f, 1.0f, 2.0f };
+        static const int   defMode[4]  = { kModeForward, kModeForward, kModeReverse, kModeForward };
         static const float defPan[4]   = { 0.0f, -30.0f, 30.0f, 0.0f };
         static const float defVol[4]   = { 80.0f, 65.0f, 60.0f, 50.0f };
         static const bool  defMute[4]  = { false, true, true, true };   // S1 active, S2-4 muted
         for (int s = 0; s < kNumStreams; ++s)
         {
             const std::string n = std::to_string(s + 1);
-            // Stored as a knob position (-8..8); speedFromKnob() gives the speed. See "Speed knob".
-            addParam(floatParam (("s" + n + "_speed").c_str(),  ("Speed " + n).c_str(),  -8.0f, 8.0f, knobFromSpeed(defSpeed[s]), "x", 2));
+            // Stored as a knob position (0..8, unipolar); speedFromKnob() gives the speed.
+            // Direction lives in Mode, not here (2026-11-15). See "Speed knob".
+            addParam(floatParam (("s" + n + "_speed").c_str(),  ("Speed " + n).c_str(),  0.0f, 8.0f, knobFromSpeed(defSpeed[s]), "x", 2));
             addParam(floatParam (("s" + n + "_tone").c_str(),   ("Tone " + n).c_str(),   -100.0f, 100.0f, 0.0f, "", 0));
             addParam(floatParam (("s" + n + "_pan").c_str(),    ("Pan " + n).c_str(),    -100.0f, 100.0f, defPan[s], "", 0));
             addParam(floatParam (("s" + n + "_volume").c_str(), ("Volume " + n).c_str(), 0.0f, 100.0f, defVol[s], "%", 0));
             addParam(floatParam (("s" + n + "_in").c_str(),     ("In " + n).c_str(),     0.0f, 100.0f, 0.0f, "%", 0));
             addParam(floatParam (("s" + n + "_out").c_str(),    ("Out " + n).c_str(),    0.0f, 100.0f, 100.0f, "%", 0));
-            addParam(choiceParam(("s" + n + "_mode").c_str(),   ("Mode " + n).c_str(),   {"Loop", "Ping-pong"}, 0));
+            addParam(choiceParam(("s" + n + "_mode").c_str(),   ("Mode " + n).c_str(),   {"Forward", "Reverse", "Ping-pong"}, defMode[s]));
             addParam(boolParam  (("s" + n + "_mute").c_str(),   ("Mute " + n).c_str(),   defMute[s]));
         }
 
@@ -495,7 +499,7 @@ public:
             stage_.store(kStageIdle, std::memory_order_release);
         }
 
-        recording_ = recPrev_ = armed_ = false;
+        recording_ = recPrev_ = rsPrev_ = armed_ = false;
         recLen_ = 0;
         capturing_ = false;                       // abort any in-progress save capture
         xfLeft_ = 0;                              // no old->new chunk crossfade in flight
@@ -526,12 +530,14 @@ public:
         // starts; the parameter keeps its saved value (state round-trips exactly). The button
         // shows lit-but-idle; one tap releases it, the next starts a take.
         if (releaseButtonsAfterLoad_.exchange(false, std::memory_order_acq_rel))
+        {
             recPrev_ = getBool(kRecord);
+            rsPrev_  = getBool(kResample);
+        }
         handleRecordButton(tr);
         const int armStart = armedStartFrame(tr, playing, n);   // -1 = no bar line in this block
         handleSaveButton();
         { float gD, gW; equalPowerMix(get(kDryWet) * 0.01f, gD, gW); dryS_.setTarget(gD); wetS_.setTarget(gW); }
-        const bool resample = getBool(kResample);
         const int  scale = getInt(kSpeedScale);
 
         for (int s = 0; s < kNumStreams; ++s)
@@ -593,11 +599,12 @@ public:
             // ----- bar-synced start: armed, and this frame is the bar line -----
             if (i == armStart) { armed_ = false; recording_ = true; recLen_ = 0; recTarget_ = armTarget_; }
 
-            // ----- recording (input, or the output when Resample is on) -----
+            // ----- recording: the input (Record) or what you hear (Resample) -----
             if (recording_ && recLen_ < recTarget_)
             {
-                float rl = resample ? yL : dryL;
-                float rr = resample ? yR : dryR;
+                const bool fromOut = takeBtn_ == 1;
+                float rl = fromOut ? yL : dryL;
+                float rr = fromOut ? yR : dryR;
                 if (recLen_ < (int)recFade) { const float g = recLen_ / recFade; rl *= g; rr *= g; }
                 back->L[(size_t)recLen_] = rl;
                 back->R[(size_t)recLen_] = rr;
@@ -738,8 +745,11 @@ private:
         std::vector<float> v = { 0.0f /*length Free*/, 0.0f /*record*/, 0.0f /*resample*/, dryWet, 0.0f /*save*/ };
         for (const StreamPreset& p : s)
         {
-            const float sv[kPerStream] = { knobFromSpeed(p.speed), p.tone, p.pan, p.vol, p.in, p.out,
-                                           (float)p.mode, p.mute ? 1.0f : 0.0f };
+            // The table below is written the readable way: a signed speed and mode 0 = loop,
+            // 1 = ping-pong. A negative loop speed is Reverse at that speed.
+            const int mode = p.mode == 1 ? kModePingPong : (p.speed < 0.0f ? kModeReverse : kModeForward);
+            const float sv[kPerStream] = { knobFromSpeed(std::fabs(p.speed)), p.tone, p.pan, p.vol, p.in, p.out,
+                                           (float)mode, p.mute ? 1.0f : 0.0f };
             v.insert(v.end(), sv, sv + kPerStream);
         }
         addProgram(name, v);
@@ -798,22 +808,45 @@ private:
         return 4.0 * num / den;
     }
 
+    // Two record buttons share one take engine (2026-11-15):
+    //   Record   - records the INPUT;
+    //   Resample - records WHAT YOU HEAR (input + streams at the Dry/Wet mix), so live playing
+    //              layers onto the loop each pass.
+    // Each is a toggle: on = start (or arm for N bars), off = stop/cancel. Whichever button
+    // started the take owns it; tapping the other one meanwhile is ignored (it springs back).
     void handleRecordButton(const mpc::Transport& tr)
     {
         static const int kBars[] = { 0, 1, 2, 4, 8, 16 };   // matches the Length choices
-        const bool rec = getBool(kRecord);
-        if (rec && !recPrev_ && !recording_ && !armed_)
+        const bool on[2]   = { getBool(kRecord), getBool(kResample) };
+        bool*      prev[2] = { &recPrev_, &rsPrev_ };
+        const int  param[2] = { kRecord, kResample };
+        const bool busy = recording_ || armed_;
+
+        for (int k = 0; k < 2; ++k)
         {
-            const int bars = kBars[clamp(getInt(kLength), 0, 5)];
-            if (bars == 0 || !barSyncAvailable(tr)) { recording_ = true; recLen_ = 0; recTarget_ = kMaxFrames; }
-            else                                    { armed_ = true; armBars_ = bars; }
+            const bool rising = on[k] && !*prev[k], falling = !on[k] && *prev[k];
+            if (rising && !busy)
+            {
+                takeBtn_ = k;                          // 0 = Record (input), 1 = Resample (output)
+                const int bars = kBars[clamp(getInt(kLength), 0, 5)];
+                if (bars == 0 || !barSyncAvailable(tr)) { recording_ = true; recLen_ = 0; recTarget_ = kMaxFrames; }
+                else                                    { armed_ = true; armBars_ = bars; }
+                *prev[k] = true;
+                return;                                // one action per block
+            }
+            if (rising && busy && k != takeBtn_)       // the other button, mid-take: release it
+            {
+                set(param[k], 0.0f); notifyHostParameterChanged(param[k]);
+                *prev[k] = false;
+                continue;
+            }
+            if (falling && busy && k == takeBtn_)
+            {
+                if (armed_)          armed_ = false;     // cancel
+                else if (recording_) finishRecording();  // stop (early, for bar-synced)
+            }
+            *prev[k] = on[k];
         }
-        else if (!rec && recPrev_)
-        {
-            if (armed_)          armed_ = false;     // cancel
-            else if (recording_) finishRecording();  // stop (early, for bar-synced)
-        }
-        recPrev_ = rec;
     }
 
     // If armed and the transport crosses a bar line inside this block, return that frame
@@ -865,9 +898,11 @@ private:
         waveGen_.fetch_add(1, std::memory_order_release);   // UI worker recomputes the waveform
         xfLeft_ = xfTotal_;
 
-        // If recording stopped on its own (hit the 30 s limit) while the button is still
-        // held on, turn the button off so it reflects that recording has ended.
-        if (getBool(kRecord)) { set(kRecord, 0.0f); notifyHostParameterChanged(kRecord); recPrev_ = false; }
+        // If recording stopped on its own (Length reached, 30 s limit, transport reset) while
+        // its button is still on, turn the button off so it reflects that the take ended.
+        if (getBool(kRecord))   { set(kRecord, 0.0f);   notifyHostParameterChanged(kRecord); }
+        if (getBool(kResample)) { set(kResample, 0.0f); notifyHostParameterChanged(kResample); }
+        recPrev_ = rsPrev_ = false;
     }
 
     // ----- Save to disk (SPEC Section 8): bounce the EFFECTED output, captured live -----
@@ -1067,9 +1102,9 @@ private:
 
         if (!st.started)
         {
-            st.ph.pos = speed >= 0.0f ? st.ph.a : st.ph.b;
-            st.ph.dir  = 1;
-            st.ph.move = speed >= 0.0f ? 1 : -1;
+            const bool rev = st.ph.mode == kModeReverse;   // Reverse starts at the out point
+            st.ph.pos  = rev ? st.ph.b : st.ph.a;
+            st.ph.dir  = st.ph.move = rev ? -1 : 1;
             st.started = true;
         }
 
@@ -1142,7 +1177,8 @@ private:
     Chunk  chunk_[2];
     int    front_ = 0;
 
-    bool recording_ = false, recPrev_ = false;
+    bool recording_ = false, recPrev_ = false, rsPrev_ = false;
+    int  takeBtn_ = 0;              // which button owns the current take: 0 Record, 1 Resample
     int  recLen_ = 0;
     int  recTarget_ = kMaxFrames;   // frames this take will last (N bars, or 30 s for Free)
     bool armed_ = false;            // bar-synced: waiting for the next bar line

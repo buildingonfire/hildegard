@@ -54,7 +54,12 @@ or program track's insert.
       after 1 bar, and Record un-lights. **The new loop starts exactly on the bar line.**
 - [ ] 2 bars armed while stopped: it waits, then starts on Play.
 - [ ] Tap while armed cancels.
-- [ ] Resample on + 1 bar: records the output. The new loop stays in time with the beat.
+- [ ] **Resample** is its own record button (since 2026-11-15): tap = take of what you hear
+      (input + streams at the Dry/Wet mix), tap again = stop. With 1 bar it arms and ends
+      itself like Record, and the new loop stays in time with the beat.
+- [ ] Tapping Resample during a Record take (or vice versa) is ignored; the button springs back.
+- [ ] Mode is Forward / Reverse / Ping-pong; Speed is 0-4x and right = faster in every mode.
+      Switching Forward <-> Reverse while playing turns the head around without a click.
 - [ ] **Stop the transport mid-take.** Expected: the take is kept and Record un-lights. If
       a fresh take starts instead, the MPC does not reset on stop, and something else is going on.
 - [ ] Let a Free take run 30 s: the status shows "Buffer full" in red, then "Ready".

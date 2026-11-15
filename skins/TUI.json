@@ -10131,14 +10131,14 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "loop",
+                  "name": "fwd",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_loop_s1.png",
-                    "offImage": "mode_loop_off.png",
+                    "onImage": "mode_fwd_s1.png",
+                    "offImage": "mode_fwd_off.png",
                     "buttonId": 0,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -10153,21 +10153,21 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 38 130 36"
+                  "bounds": "16 38 84 36"
                 }
               },
               {
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "pingpong",
+                  "name": "rev",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_pp_s1.png",
-                    "offImage": "mode_pp_off.png",
+                    "onImage": "mode_rev_s1.png",
+                    "offImage": "mode_rev_off.png",
                     "buttonId": 1,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -10182,7 +10182,36 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 38 130 36"
+                  "bounds": "108 38 84 36"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "pp",
+                  "type": "Button",
+                  "data": {
+                    "version": 2,
+                    "onImage": "mode_pp_s1.png",
+                    "offImage": "mode_pp_off.png",
+                    "buttonId": 2,
+                    "numButtonsInGroup": 3,
+                    "handleName": "Data",
+                    "gestureBehaviour": "Instant"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "200 38 84 36"
                 }
               }
             ]
@@ -10528,14 +10557,14 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "loop",
+                  "name": "fwd",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_loop_s1_dim.png",
-                    "offImage": "mode_loop_off_dim.png",
+                    "onImage": "mode_fwd_s1_dim.png",
+                    "offImage": "mode_fwd_off_dim.png",
                     "buttonId": 0,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -10550,21 +10579,21 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 38 130 36"
+                  "bounds": "16 38 84 36"
                 }
               },
               {
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "pingpong",
+                  "name": "rev",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_pp_s1_dim.png",
-                    "offImage": "mode_pp_off_dim.png",
+                    "onImage": "mode_rev_s1_dim.png",
+                    "offImage": "mode_rev_off_dim.png",
                     "buttonId": 1,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -10579,7 +10608,36 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 38 130 36"
+                  "bounds": "108 38 84 36"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "pp",
+                  "type": "Button",
+                  "data": {
+                    "version": 2,
+                    "onImage": "mode_pp_s1_dim.png",
+                    "offImage": "mode_pp_off_dim.png",
+                    "buttonId": 2,
+                    "numButtonsInGroup": 3,
+                    "handleName": "Data",
+                    "gestureBehaviour": "Instant"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "200 38 84 36"
                 }
               }
             ]
@@ -10925,14 +10983,14 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "loop",
+                  "name": "fwd",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_loop_s2.png",
-                    "offImage": "mode_loop_off.png",
+                    "onImage": "mode_fwd_s2.png",
+                    "offImage": "mode_fwd_off.png",
                     "buttonId": 0,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -10947,21 +11005,21 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 38 130 36"
+                  "bounds": "16 38 84 36"
                 }
               },
               {
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "pingpong",
+                  "name": "rev",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_pp_s2.png",
-                    "offImage": "mode_pp_off.png",
+                    "onImage": "mode_rev_s2.png",
+                    "offImage": "mode_rev_off.png",
                     "buttonId": 1,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -10976,7 +11034,36 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 38 130 36"
+                  "bounds": "108 38 84 36"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "pp",
+                  "type": "Button",
+                  "data": {
+                    "version": 2,
+                    "onImage": "mode_pp_s2.png",
+                    "offImage": "mode_pp_off.png",
+                    "buttonId": 2,
+                    "numButtonsInGroup": 3,
+                    "handleName": "Data",
+                    "gestureBehaviour": "Instant"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "200 38 84 36"
                 }
               }
             ]
@@ -11322,14 +11409,14 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "loop",
+                  "name": "fwd",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_loop_s2_dim.png",
-                    "offImage": "mode_loop_off_dim.png",
+                    "onImage": "mode_fwd_s2_dim.png",
+                    "offImage": "mode_fwd_off_dim.png",
                     "buttonId": 0,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -11344,21 +11431,21 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 38 130 36"
+                  "bounds": "16 38 84 36"
                 }
               },
               {
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "pingpong",
+                  "name": "rev",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_pp_s2_dim.png",
-                    "offImage": "mode_pp_off_dim.png",
+                    "onImage": "mode_rev_s2_dim.png",
+                    "offImage": "mode_rev_off_dim.png",
                     "buttonId": 1,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -11373,7 +11460,36 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 38 130 36"
+                  "bounds": "108 38 84 36"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "pp",
+                  "type": "Button",
+                  "data": {
+                    "version": 2,
+                    "onImage": "mode_pp_s2_dim.png",
+                    "offImage": "mode_pp_off_dim.png",
+                    "buttonId": 2,
+                    "numButtonsInGroup": 3,
+                    "handleName": "Data",
+                    "gestureBehaviour": "Instant"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "200 38 84 36"
                 }
               }
             ]
@@ -11719,14 +11835,14 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "loop",
+                  "name": "fwd",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_loop_s3.png",
-                    "offImage": "mode_loop_off.png",
+                    "onImage": "mode_fwd_s3.png",
+                    "offImage": "mode_fwd_off.png",
                     "buttonId": 0,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -11741,21 +11857,21 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 38 130 36"
+                  "bounds": "16 38 84 36"
                 }
               },
               {
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "pingpong",
+                  "name": "rev",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_pp_s3.png",
-                    "offImage": "mode_pp_off.png",
+                    "onImage": "mode_rev_s3.png",
+                    "offImage": "mode_rev_off.png",
                     "buttonId": 1,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -11770,7 +11886,36 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 38 130 36"
+                  "bounds": "108 38 84 36"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "pp",
+                  "type": "Button",
+                  "data": {
+                    "version": 2,
+                    "onImage": "mode_pp_s3.png",
+                    "offImage": "mode_pp_off.png",
+                    "buttonId": 2,
+                    "numButtonsInGroup": 3,
+                    "handleName": "Data",
+                    "gestureBehaviour": "Instant"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "200 38 84 36"
                 }
               }
             ]
@@ -12116,14 +12261,14 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "loop",
+                  "name": "fwd",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_loop_s3_dim.png",
-                    "offImage": "mode_loop_off_dim.png",
+                    "onImage": "mode_fwd_s3_dim.png",
+                    "offImage": "mode_fwd_off_dim.png",
                     "buttonId": 0,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -12138,21 +12283,21 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 38 130 36"
+                  "bounds": "16 38 84 36"
                 }
               },
               {
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "pingpong",
+                  "name": "rev",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_pp_s3_dim.png",
-                    "offImage": "mode_pp_off_dim.png",
+                    "onImage": "mode_rev_s3_dim.png",
+                    "offImage": "mode_rev_off_dim.png",
                     "buttonId": 1,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -12167,7 +12312,36 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 38 130 36"
+                  "bounds": "108 38 84 36"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "pp",
+                  "type": "Button",
+                  "data": {
+                    "version": 2,
+                    "onImage": "mode_pp_s3_dim.png",
+                    "offImage": "mode_pp_off_dim.png",
+                    "buttonId": 2,
+                    "numButtonsInGroup": 3,
+                    "handleName": "Data",
+                    "gestureBehaviour": "Instant"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "200 38 84 36"
                 }
               }
             ]
@@ -12513,14 +12687,14 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "loop",
+                  "name": "fwd",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_loop_s4.png",
-                    "offImage": "mode_loop_off.png",
+                    "onImage": "mode_fwd_s4.png",
+                    "offImage": "mode_fwd_off.png",
                     "buttonId": 0,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -12535,21 +12709,21 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 38 130 36"
+                  "bounds": "16 38 84 36"
                 }
               },
               {
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "pingpong",
+                  "name": "rev",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_pp_s4.png",
-                    "offImage": "mode_pp_off.png",
+                    "onImage": "mode_rev_s4.png",
+                    "offImage": "mode_rev_off.png",
                     "buttonId": 1,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -12564,7 +12738,36 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 38 130 36"
+                  "bounds": "108 38 84 36"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "pp",
+                  "type": "Button",
+                  "data": {
+                    "version": 2,
+                    "onImage": "mode_pp_s4.png",
+                    "offImage": "mode_pp_off.png",
+                    "buttonId": 2,
+                    "numButtonsInGroup": 3,
+                    "handleName": "Data",
+                    "gestureBehaviour": "Instant"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "200 38 84 36"
                 }
               }
             ]
@@ -12910,14 +13113,14 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "loop",
+                  "name": "fwd",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_loop_s4_dim.png",
-                    "offImage": "mode_loop_off_dim.png",
+                    "onImage": "mode_fwd_s4_dim.png",
+                    "offImage": "mode_fwd_off_dim.png",
                     "buttonId": 0,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -12932,21 +13135,21 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 38 130 36"
+                  "bounds": "16 38 84 36"
                 }
               },
               {
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "pingpong",
+                  "name": "rev",
                   "type": "Button",
                   "data": {
                     "version": 2,
-                    "onImage": "mode_pp_s4_dim.png",
-                    "offImage": "mode_pp_off_dim.png",
+                    "onImage": "mode_rev_s4_dim.png",
+                    "offImage": "mode_rev_off_dim.png",
                     "buttonId": 1,
-                    "numButtonsInGroup": 2,
+                    "numButtonsInGroup": 3,
                     "handleName": "Data",
                     "gestureBehaviour": "Instant"
                   }
@@ -12961,7 +13164,36 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 38 130 36"
+                  "bounds": "108 38 84 36"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "pp",
+                  "type": "Button",
+                  "data": {
+                    "version": 2,
+                    "onImage": "mode_pp_s4_dim.png",
+                    "offImage": "mode_pp_off_dim.png",
+                    "buttonId": 2,
+                    "numButtonsInGroup": 3,
+                    "handleName": "Data",
+                    "gestureBehaviour": "Instant"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "200 38 84 36"
                 }
               }
             ]
@@ -12988,7 +13220,7 @@
       },
       {
         "key": "Parameter 11",
-        "value": ["Loop", "Ping-pong"]
+        "value": ["Forward", "Reverse", "Ping-pong"]
       },
       {
         "key": "Parameter 12",
@@ -12996,7 +13228,7 @@
       },
       {
         "key": "Parameter 19",
-        "value": ["Loop", "Ping-pong"]
+        "value": ["Forward", "Reverse", "Ping-pong"]
       },
       {
         "key": "Parameter 20",
@@ -13004,7 +13236,7 @@
       },
       {
         "key": "Parameter 27",
-        "value": ["Loop", "Ping-pong"]
+        "value": ["Forward", "Reverse", "Ping-pong"]
       },
       {
         "key": "Parameter 28",
@@ -13012,7 +13244,7 @@
       },
       {
         "key": "Parameter 35",
-        "value": ["Loop", "Ping-pong"]
+        "value": ["Forward", "Reverse", "Ping-pong"]
       },
       {
         "key": "Parameter 36",
@@ -13378,7 +13610,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Resample]/Parameter 0"
+                  "handleName": "WithName[Resampling]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -13416,7 +13648,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Records the current loop]/Parameter 0"
+                  "handleName": "WithName[Records input + loop]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -13454,7 +13686,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Records the current loop]/Parameter 0"
+                  "handleName": "WithName[Tap to stop]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -15250,8 +15482,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s1_bi",
-                "type": "ctrl_s1_bi",
+                "name": "ctrl_s1_uni",
+                "type": "ctrl_s1_uni",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -15318,8 +15550,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s1_bi_dim",
-                "type": "ctrl_s1_bi_dim",
+                "name": "ctrl_s1_uni_dim",
+                "type": "ctrl_s1_uni_dim",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -15928,8 +16160,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s2_bi",
-                "type": "ctrl_s2_bi",
+                "name": "ctrl_s2_uni",
+                "type": "ctrl_s2_uni",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -15996,8 +16228,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s2_bi_dim",
-                "type": "ctrl_s2_bi_dim",
+                "name": "ctrl_s2_uni_dim",
+                "type": "ctrl_s2_uni_dim",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -16606,8 +16838,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s3_bi",
-                "type": "ctrl_s3_bi",
+                "name": "ctrl_s3_uni",
+                "type": "ctrl_s3_uni",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -16674,8 +16906,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s3_bi_dim",
-                "type": "ctrl_s3_bi_dim",
+                "name": "ctrl_s3_uni_dim",
+                "type": "ctrl_s3_uni_dim",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -17284,8 +17516,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s4_bi",
-                "type": "ctrl_s4_bi",
+                "name": "ctrl_s4_uni",
+                "type": "ctrl_s4_uni",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -17352,8 +17584,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s4_bi_dim",
-                "type": "ctrl_s4_bi_dim",
+                "name": "ctrl_s4_uni_dim",
+                "type": "ctrl_s4_uni_dim",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
