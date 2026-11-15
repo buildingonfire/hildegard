@@ -21,9 +21,10 @@
 //     volume, muting, dry/wet, wet soft clip, parameter smoothing, transport-follow,
 //     save-to-disk, and the display parameters (head positions, status, waveform).
 //   Also: bar-synced record (Length = N bars: arm, start on the next bar line, stop
-//     after N bars).
-//   Deliberately NOT here yet (later build-order steps): Resample timing polish, the speed-knob snapping curve and project-chunk state. Speed is a
-//     plain linear parameter for now.
+//     after N bars); a sample-accurate buffer swap with a ~20 ms per-stream old->new
+//     chunk crossfade (the new chunk starts on the frame after the take ends, so bar-synced
+//     takes and Resample stay on the bar line); the speed-knob snapping curve (Section 4);
+//     the recorded chunk saved with the project (Section 9); built-in presets.
 //
 // Display parameters are written by a background "UI worker" thread (the same thread
 // that writes saved WAVs), never by process(). Proven on the Live III: the MPC only
@@ -31,8 +32,6 @@
 //   - pos1-4 and status are written + notifyHostParameterChanged(), at most 25 Hz;
 //   - the 128 wave bars change once per recording and are refreshed with a single
 //     requestDisplayUpdate() (they are non-automatable, to keep them out of automation).
-//   Also simplified for now: the buffer swap uses a short wet fade-in rather than a
-//     per-stream old->new chunk crossfade.
 //
 // Realtime: process() does no allocation, locks, I/O or logging. The two 30 s buffers
 // are allocated once in prepare(). All transcendental functions (pow/exp/cos/sin) run
@@ -51,6 +50,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <ctime>
 #include <string>
 #include <thread>
@@ -102,6 +102,57 @@ constexpr float kSwapFadeMs   = 20.0f;     // wet fade-in after a buffer swap
 constexpr float kPlayInMs     = 5.0f;      // stream fade-in when the transport starts
 constexpr float kPlayOutMs    = 10.0f;     // stream fade-out when the transport stops
 
+// ---------------------------------------------------------------------------
+// Speed knob (SPEC Section 4). The stored parameter is a KNOB POSITION x in -8..8, not the
+// speed itself; speedFromKnob() turns it into the playback speed. The curve:
+//   - gives the slow end more room: |x| 0-1 -> 0-0.5x, 1-2 -> 0.5-1x, 2-4 -> 1-2x, 4-8 -> 2-8x
+//     (a straight -8..8 line squeezes 0..0.5x into 3% of the knob);
+//   - is FLAT for +-kSnapHalf around each landmark (0, +-0.5x, +-1x, +-2x): about 2% of the
+//     knob's travel each, so a Q-Link turn sits exactly on the landmark for a moment, then
+//     moves on. Being in the mapping, it works the same for touch, Q-Links, wheel and automation.
+// Changing these knots changes what saved projects sound like: treat them as permanent.
+// ---------------------------------------------------------------------------
+constexpr int   kSpeedKnots = 5;
+constexpr float kSpeedKnobX[kSpeedKnots] = { 0.0f, 1.0f, 2.0f, 4.0f, 8.0f };
+constexpr float kSpeedValue[kSpeedKnots] = { 0.0f, 0.5f, 1.0f, 2.0f, 8.0f };
+constexpr float kSnapHalf = 0.16f;   // half-width of each plateau, in knob units (16 = full travel)
+
+inline float speedFromKnob(float x)
+{
+    const float ax = std::fabs(x);
+    float v = kSpeedValue[kSpeedKnots - 1];
+    for (int k = 0; k + 1 < kSpeedKnots; ++k)
+    {
+        if (ax > kSpeedKnobX[k + 1]) continue;
+        const float lo = kSpeedKnobX[k] + kSnapHalf;
+        const float hi = kSpeedKnobX[k + 1] - (k + 2 < kSpeedKnots ? kSnapHalf : 0.0f);   // no plateau at 8x
+        if (ax <= lo)      v = kSpeedValue[k];
+        else if (ax >= hi) v = kSpeedValue[k + 1];
+        else               v = kSpeedValue[k] + (kSpeedValue[k + 1] - kSpeedValue[k]) * (ax - lo) / (hi - lo);
+        break;
+    }
+    return x < 0.0f ? -v : v;
+}
+
+// Inverse, for defaults and presets: the knob position that gives `speed` (plateau centre for a landmark).
+inline float knobFromSpeed(float speed)
+{
+    const float av = std::fmin(std::fabs(speed), kSpeedValue[kSpeedKnots - 1]);
+    float x = kSpeedKnobX[kSpeedKnots - 1];
+    for (int k = 0; k < kSpeedKnots; ++k)
+        if (av == kSpeedValue[k]) { x = kSpeedKnobX[k]; goto done; }
+    for (int k = 0; k + 1 < kSpeedKnots; ++k)
+    {
+        if (av > kSpeedValue[k + 1]) continue;
+        const float lo = kSpeedKnobX[k] + kSnapHalf;
+        const float hi = kSpeedKnobX[k + 1] - (k + 2 < kSpeedKnots ? kSnapHalf : 0.0f);
+        x = lo + (hi - lo) * (av - kSpeedValue[k]) / (kSpeedValue[k + 1] - kSpeedValue[k]);
+        break;
+    }
+done:
+    return speed < 0.0f ? -x : x;
+}
+
 // 4-point Hermite (Catmull-Rom). x in [0,1) between y1 and y2.
 inline float hermite(float y0, float y1, float y2, float y3, float x)
 {
@@ -127,21 +178,74 @@ inline float sampleAt(const std::vector<float>& buf, int len, double pos)
     return hermite(at(i - 1), at(i), at(i + 1), at(i + 2), frac);
 }
 
-// One tape playhead reading the front chunk. All smoothers below hold *gains* (or the
+// Where a playhead is and the loop it runs in (frames of one chunk).
+struct PlayHead
+{
+    double pos = 0.0;
+    int    dir = 1;                         // +1 / -1 for ping-pong
+    float  a = 0.0f, b = 0.0f, xf = 0.0f;   // loop region and loop crossfade length
+    int    mode = 0;                        // 0 = Loop, 1 = Ping-pong
+};
+
+// Read one stereo sample. In Loop mode, the last `xf` frames before the region end are
+// equal-power crossfaded with the region start, so the loop point is seamless (~10% of the
+// loop runtime). sqrt() is a cheap hardware op and only runs inside the fade zone.
+inline void readHead(const PlayHead& h, const Chunk& c, int len, float& outL, float& outR)
+{
+    const double hp = h.pos, a = h.a, b = h.b, xf = h.xf;
+    float mL = sampleAt(c.L, len, hp);
+    float mR = sampleAt(c.R, len, hp);
+    if (h.mode == 0 && xf > 1.0)
+    {
+        if (h.dir > 0 && hp > b - xf)
+        {
+            const float t = clamp((float)((hp - (b - xf)) / xf), 0.0f, 1.0f);
+            const double wp = a + (hp - (b - xf));
+            const float gM = std::sqrt(1.0f - t), gW = std::sqrt(t);
+            mL = gM * mL + gW * sampleAt(c.L, len, wp);
+            mR = gM * mR + gW * sampleAt(c.R, len, wp);
+        }
+        else if (h.dir < 0 && hp < a + xf)
+        {
+            const float t = clamp((float)(((a + xf) - hp) / xf), 0.0f, 1.0f);
+            const double wp = b - ((a + xf) - hp);
+            const float gM = std::sqrt(1.0f - t), gW = std::sqrt(t);
+            mL = gM * mL + gW * sampleAt(c.L, len, wp);
+            mR = gM * mR + gW * sampleAt(c.R, len, wp);
+        }
+    }
+    outL = mL; outR = mR;
+}
+
+// Advance and wrap. Loop wrapping accounts for the end->start overlap crossfade length.
+inline void advanceHead(PlayHead& h, float speed, int len)
+{
+    h.pos += (double)std::fabs(speed) * h.dir;
+    const double a = h.a, b = h.b, xf = h.xf;
+    if (h.mode == 0)   // Loop
+    {
+        if (h.dir > 0 && h.pos >= b)      h.pos = (a + xf) + (h.pos - b);
+        else if (h.dir < 0 && h.pos <= a) h.pos = (b - xf) - (a - h.pos);
+    }
+    else               // Ping-pong: reflect at the ends (position-continuous, low click)
+    {
+        if (h.dir > 0 && h.pos >= b)      { h.pos = b - (h.pos - b); h.dir = -1; }
+        else if (h.dir < 0 && h.pos <= a) { h.pos = a + (a - h.pos); h.dir = +1; }
+    }
+    h.pos = clamp(h.pos, 0.0, (double)(len > 0 ? len - 1 : 0));
+}
+
+// One tape stream reading the front chunk. All smoothers below hold *gains* (or the
 // speed value), so the per-sample loop never calls a transcendental function.
 struct Stream
 {
-    double head = 0.0;
-    int    dir = 1;             // +1 / -1 for ping-pong
-    bool   started = false;
+    PlayHead ph;                // the playhead on the current (front) chunk
+    PlayHead ghost;             // the old playhead on the previous chunk, alive ~20 ms after a swap
+    bool     started = false;
 
     Smoother speedS;            // speed value (frames/frame)
     Smoother volG, panLG, panRG, gLowG, gHighG, muteG;   // smoothed gains
     OnePoleLP toneLP_L, toneLP_R;   // fixed ~700 Hz tilt crossover
-
-    // Per-block loop region, crossfade length and mode (plain arithmetic, set once per block).
-    float a = 0.0f, b = 0.0f, xf = 0.0f;
-    int   mode = 0;
 
     void prepare(double sr)
     {
@@ -154,7 +258,7 @@ struct Stream
     }
     void reset()
     {
-        head = 0.0; dir = 1; started = false;
+        ph = PlayHead(); ghost = PlayHead(); started = false;
         toneLP_L.reset(); toneLP_R.reset();
     }
 };
@@ -235,7 +339,8 @@ public:
         for (int s = 0; s < kNumStreams; ++s)
         {
             const std::string n = std::to_string(s + 1);
-            addParam(floatParam (("s" + n + "_speed").c_str(),  ("Speed " + n).c_str(),  -8.0f, 8.0f, defSpeed[s], "x", 2));
+            // Stored as a knob position (-8..8); speedFromKnob() gives the speed. See "Speed knob".
+            addParam(floatParam (("s" + n + "_speed").c_str(),  ("Speed " + n).c_str(),  -8.0f, 8.0f, knobFromSpeed(defSpeed[s]), "x", 2));
             addParam(floatParam (("s" + n + "_tone").c_str(),   ("Tone " + n).c_str(),   -100.0f, 100.0f, 0.0f, "", 0));
             addParam(floatParam (("s" + n + "_pan").c_str(),    ("Pan " + n).c_str(),    -100.0f, 100.0f, defPan[s], "", 0));
             addParam(floatParam (("s" + n + "_volume").c_str(), ("Volume " + n).c_str(), 0.0f, 100.0f, defVol[s], "%", 0));
@@ -266,6 +371,8 @@ public:
 
         if (numParams() != kNumParams) mpc::log("Hildegard: parameter count mismatch");
 
+        addPresets();
+
         // Owned background thread: Save-to-disk and display-parameter updates. Neither file
         // writing nor host notification ever happens on the audio thread.
         saveWorker_ = std::thread([this] { workerLoop(); });
@@ -280,12 +387,16 @@ public:
     void prepare(double sampleRate, int /*maxBlockSize*/) override
     {
         sampleRate_ = sampleRate;
-        if (chunk_[0].L.empty()) { chunk_[0].alloc(); chunk_[1].alloc(); saveBuf_.alloc(); }
+        // Each buffer separately: a project load before the first prepare() may already have
+        // swapped a staged chunk into one of them.
+        for (Chunk& c : chunk_) if (c.L.empty()) c.alloc();
+        if (saveBuf_.L.empty()) saveBuf_.alloc();
         for (Stream& s : streams_) s.prepare(sampleRate);
         dryS_.setTime(50.0f, sampleRate);
         wetS_.setTime(50.0f, sampleRate);
         tpUp_   = 1.0f / std::max(1.0f, msToSamples(kPlayInMs, sampleRate));
         tpDown_ = 1.0f / std::max(1.0f, msToSamples(kPlayOutMs, sampleRate));
+        xfTotal_ = std::max(1, (int)msToSamples(kSwapFadeMs, sampleRate));
         reset();
     }
 
@@ -294,10 +405,33 @@ public:
         // IMPORTANT: do NOT reset front_ or the chunk lengths here. reset() runs on every
         // transport stop/suspend and after a state load; zeroing front_ orphaned the user's
         // recorded loop (it pointed at the empty buffer). The chunk must survive.
+
+        // A take in progress is KEPT (ended and swapped in, Record released) rather than
+        // thrown away: if the MPC resets the plugin when its transport stops, stopping
+        // mid-take then behaves like tapping Record off. (Not when a project load is waiting:
+        // the loaded chunk replaces it anyway, and swapping twice would flash it on screen.)
+        if (recording_ && recLen_ > 0 && !chunk_[0].L.empty()
+            && stage_.load(std::memory_order_acquire) != kStageReady)
+            finishRecording();
+
+        // A project just loaded (loadExtraState staged its chunk): swap it in. O(1): the
+        // vectors are exchanged, never copied or allocated here.
+        int ready = kStageReady;
+        if (stage_.compare_exchange_strong(ready, kStageSwapping, std::memory_order_acq_rel))
+        {
+            Chunk& back = chunk_[1 - front_];
+            back.L.swap(stage_L_); back.R.swap(stage_R_);
+            back.length = stageLen_;
+            front_ = 1 - front_;
+            frontOut_.store(front_, std::memory_order_release);
+            waveGen_.fetch_add(1, std::memory_order_release);   // UI worker redraws the waveform
+            stage_.store(kStageIdle, std::memory_order_release);
+        }
+
         recording_ = recPrev_ = armed_ = false;
         recLen_ = 0;
         capturing_ = false;                       // abort any in-progress save capture
-        swapFade_ = 1.0f; swapRamp_ = 0.0f; swapRising_ = false;
+        xfLeft_ = 0;                              // no old->new chunk crossfade in flight
         tpGain_ = 0.0f; wasPlaying_ = false;      // streams fade in when the transport starts
         for (Stream& s : streams_) s.reset();
         float gD, gW; equalPowerMix(get(kDryWet) * 0.01f, gD, gW);
@@ -326,15 +460,11 @@ public:
         { float gD, gW; equalPowerMix(get(kDryWet) * 0.01f, gD, gW); dryS_.setTarget(gD); wetS_.setTarget(gW); }
         const bool resample = getBool(kResample);
 
-        Chunk& front = chunk_[front_];
-        Chunk& back  = chunk_[1 - front_];
-        const int flen = front.length;
-
         for (int s = 0; s < kNumStreams; ++s)
         {
             Stream& st = streams_[s];
             const int b = streamBase(s);
-            st.speedS.setTarget(get(b + oSpeed));
+            st.speedS.setTarget(speedFromKnob(get(b + oSpeed)));
             st.volG.setTarget(volumeGain(get(b + oVolume)));
             float pl, pr; equalPowerPan(clamp(get(b + oPan) * 0.01f, -1.0f, 1.0f), pl, pr);
             st.panLG.setTarget(pl); st.panRG.setTarget(pr);
@@ -342,18 +472,14 @@ public:
             st.gLowG.setTarget(dbToGain(-6.0f * amt));
             st.gHighG.setTarget(dbToGain(+6.0f * amt));
             st.muteG.setTarget(getBool(b + oMute) ? 0.0f : 1.0f);
-
-            // Loop region in frames, min length enforced.
-            float a = get(b + oIn)  * 0.01f * (flen - 1);
-            float bb = get(b + oOut) * 0.01f * (flen - 1);
-            if (a > bb) std::swap(a, bb);
-            const float minLen = msToSamples(kMinRegionMs, sampleRate_);
-            if (bb - a < minLen) bb = clamp(a + minLen, 0.0f, (float)(flen > 0 ? flen - 1 : 0));
-            st.a = a; st.b = bb;
-            const float region = bb - a;
-            st.xf = clamp(kLoopXfadePct * region, msToSamples(kMinXfadeMs, sampleRate_), 0.5f * region);
-            st.mode = getInt(b + oMode);
         }
+        // The front chunk can change MID-BLOCK (a take ends on frame i), so these are refreshed
+        // right after a swap: the new chunk starts playing on the very next frame, which keeps a
+        // bar-synced take (and a Resample) locked to the bar line.
+        const Chunk* front = &chunk_[front_];
+        Chunk* back  = &chunk_[1 - front_];
+        int flen = front->length;
+        updateRegions(flen);
 
         const float recFade = msToSamples(kRecFadeMs, sampleRate_);
         const float tpTarget = playing ? 1.0f : 0.0f;
@@ -363,25 +489,29 @@ public:
             const float dryL = inL ? inL[i] : 0.0f;
             const float dryR = inR ? inR[i] : 0.0f;
 
+            // Old->new chunk crossfade after a swap (SPEC 3.3), equal power, ~20 ms.
+            float gNew = 1.0f, gOld = 0.0f;
+            if (xfLeft_ > 0)
+            {
+                const float t = 1.0f - (float)xfLeft_ / (float)xfTotal_;
+                gNew = std::sqrt(t); gOld = std::sqrt(1.0f - t);
+                --xfLeft_;
+            }
+            const Chunk& ghostChunk = chunk_[1 - front_];
+            const int ghostLen = gOld > 0.0f ? ghostLen_ : 0;
+
             float wetL = 0.0f, wetR = 0.0f;
             for (int s = 0; s < kNumStreams; ++s)
-                renderStream(streams_[s], front, flen, playing, wetL, wetR);
+                renderStream(streams_[s], *front, flen, ghostChunk, ghostLen, gNew, gOld, playing, wetL, wetR);
 
             wetL = softClip(wetL);
             wetR = softClip(wetR);
-
-            if (swapRising_)
-            {
-                swapFade_ += swapRamp_;
-                if (swapFade_ >= 1.0f) { swapFade_ = 1.0f; swapRising_ = false; }
-            }
 
             // Transport fade: streams fade in on start, out on stop; heads hold while stopped.
             if (tpGain_ < tpTarget) { tpGain_ += tpUp_; if (tpGain_ > tpTarget) tpGain_ = tpTarget; }
             else if (tpGain_ > tpTarget) { tpGain_ -= tpDown_; if (tpGain_ < tpTarget) tpGain_ = tpTarget; }
 
-            const float wetGain = swapFade_ * tpGain_;
-            wetL *= wetGain; wetR *= wetGain;
+            wetL *= tpGain_; wetR *= tpGain_;
 
             const float gDry = dryS_.process();
             const float gWet = wetS_.process();
@@ -397,13 +527,16 @@ public:
                 float rl = resample ? yL : dryL;
                 float rr = resample ? yR : dryR;
                 if (recLen_ < (int)recFade) { const float g = recLen_ / recFade; rl *= g; rr *= g; }
-                back.L[(size_t)recLen_] = rl;
-                back.R[(size_t)recLen_] = rr;
+                back->L[(size_t)recLen_] = rl;
+                back->R[(size_t)recLen_] = rr;
                 if (++recLen_ >= recTarget_)
                 {
                     finishRecording();   // N bars done, or the 30 s buffer is full
                     if (recLen_ >= kMaxFrames)
                         bufferFullEvents_.fetch_add(1, std::memory_order_relaxed);   // status: "Buffer full"
+                    front = &chunk_[front_]; back = &chunk_[1 - front_];
+                    flen = front->length;
+                    updateRegions(flen);
                 }
             }
 
@@ -429,7 +562,7 @@ public:
         // Publish state for the UI worker (lock-free; it turns these into display params).
         const int flenNow = chunk_[front_].length;
         for (int s = 0; s < kNumStreams; ++s)
-            posOut_[s].store(flenNow > 1 ? (float)(streams_[s].head / (double)(flenNow - 1)) : 0.0f,
+            posOut_[s].store(flenNow > 1 ? (float)(streams_[s].ph.pos / (double)(flenNow - 1)) : 0.0f,
                              std::memory_order_relaxed);
         hasChunkOut_.store(flenNow > 0, std::memory_order_relaxed);
         recordingOut_.store(recording_, std::memory_order_relaxed);
@@ -442,7 +575,13 @@ public:
         if (index < kNumGlobal || index >= kNumUser) return false;
         const int off = (index - kNumGlobal) % kPerStream;
         char buf[32];
-        if (off == oSpeed) { std::snprintf(buf, sizeof(buf), "%.2fx", (double)plain); out = buf; return true; }
+        if (off == oSpeed)
+        {
+            const float v = speedFromKnob(plain);
+            std::snprintf(buf, sizeof(buf), "%.2fx", std::fabs(v) < 0.005f ? 0.0 : (double)v);
+            out = buf;
+            return true;
+        }
         if (off == oPan)
         {
             const int p = (int)std::lround(plain);
@@ -460,7 +599,111 @@ public:
         return false;
     }
 
+    // ----- Project state (SPEC Section 9): the recorded chunk travels with the project -----
+    // Parameters are saved by the framework. This adds the front chunk as 16-bit stereo:
+    //   "HGC1" | u32 version (1) | u32 sample rate | u32 frames | frames x { i16 L, i16 R }
+    // ~5.3 MB for a full 30 s take. An empty chunk is saved too (frames = 0), so loading a
+    // project that had no take clears the loop instead of keeping a stale one.
+    void saveExtraState(std::vector<uint8_t>& out) override
+    {
+        const Chunk& c = chunk_[frontOut_.load(std::memory_order_acquire)];
+        const int len = c.L.empty() ? 0 : clamp(c.length, 0, kMaxFrames);
+        out.clear();
+        out.reserve(16 + (size_t)len * 4);
+        auto putU32 = [&out](uint32_t v) { for (int i = 0; i < 4; ++i) out.push_back((uint8_t)(v >> (8 * i))); };
+        out.push_back('H'); out.push_back('G'); out.push_back('C'); out.push_back('1');
+        putU32(1);
+        putU32((uint32_t)sampleRate_);
+        putU32((uint32_t)len);
+        for (int i = 0; i < len; ++i)
+            for (float v : { c.L[(size_t)i], c.R[(size_t)i] })
+            {
+                const int16_t s = (int16_t)std::lround((double)clamp(v, -1.0f, 1.0f) * 32767.0);
+                out.push_back((uint8_t)(s & 0xFF));
+                out.push_back((uint8_t)((uint16_t)s >> 8));
+            }
+    }
+
+    // Runs on the host's UI thread: decode into a staging buffer; reset() (audio thread)
+    // swaps it in. Nothing here touches the buffers process() is using.
+    void loadExtraState(const uint8_t* d, size_t n) override
+    {
+        if (d == nullptr || n < 16 || std::memcmp(d, "HGC1", 4) != 0) return;
+        auto u32 = [d](size_t at) { uint32_t v = 0; for (int i = 0; i < 4; ++i) v |= (uint32_t)d[at + i] << (8 * i); return v; };
+        const uint32_t len = u32(12);
+        if (u32(4) != 1 || len > (uint32_t)kMaxFrames || 16 + (size_t)len * 4 > n) return;
+
+        // A project saved mid-take must not reopen recording (Record would be a rising edge).
+        if (getBool(kRecord)) set(kRecord, 0.0f);
+        if (getBool(kSave))   set(kSave, 0.0f);
+
+        // Claim the staging slot (wait if the audio thread is swapping a previous load in).
+        for (;;)
+        {
+            int s = stage_.load(std::memory_order_acquire);
+            if (s == kStageSwapping) { std::this_thread::yield(); continue; }
+            if (stage_.compare_exchange_weak(s, kStageWriting, std::memory_order_acq_rel)) break;
+        }
+        if (stage_L_.size() != (size_t)kMaxFrames) { stage_L_.assign(kMaxFrames, 0.0f); stage_R_.assign(kMaxFrames, 0.0f); }
+        const uint8_t* p = d + 16;
+        for (uint32_t i = 0; i < len; ++i, p += 4)
+        {
+            stage_L_[i] = (float)(int16_t)(uint16_t)(p[0] | (p[1] << 8)) / 32767.0f;
+            stage_R_[i] = (float)(int16_t)(uint16_t)(p[2] | (p[3] << 8)) / 32767.0f;
+        }
+        stageLen_ = (int)len;
+        stage_.store(kStageReady, std::memory_order_release);
+    }
+
 private:
+    // ----- Built-in presets (docs/presets.md). Values are plain, in parameter order. -----
+    // Presets set Length to Free and leave Record/Save off; they never touch the recorded chunk.
+    struct StreamPreset { float speed, tone, pan, vol, in, out; int mode; bool mute; };
+    void addPreset(const char* name, float dryWet, const StreamPreset (&s)[kNumStreams])
+    {
+        std::vector<float> v = { 0.0f /*length Free*/, 0.0f /*record*/, 0.0f /*resample*/, dryWet, 0.0f /*save*/ };
+        for (const StreamPreset& p : s)
+        {
+            const float sv[kPerStream] = { knobFromSpeed(p.speed), p.tone, p.pan, p.vol, p.in, p.out,
+                                           (float)p.mode, p.mute ? 1.0f : 0.0f };
+            v.insert(v.end(), sv, sv + kPerStream);
+        }
+        addProgram(name, v);
+    }
+
+    void addPresets()
+    {
+        //                         speed  tone   pan  vol   in    out   mode  mute
+        addPreset("Init", 50.0f, {{ 1.0f,    0,    0,  80,   0,  100,    0, false },
+                                  { 0.5f,    0,  -30,  65,   0,  100,    0, true  },
+                                  {-1.0f,    0,   30,  60,   0,  100,    0, true  },
+                                  { 2.0f,    0,    0,  50,   0,  100,    0, true  }});
+        addPreset("Octave Stack", 50.0f, {{ 1.0f,    0,    0,  70,   0,  100,    0, false },
+                                          { 0.5f,  -30,  -40,  65,   0,  100,    0, false },
+                                          { 2.0f,  -20,   40,  45,   0,  100,    0, false },
+                                          {-1.0f,    0,    0,  50,   0,  100,    0, true  }});
+        addPreset("Reverse Swell", 60.0f, {{-1.0f,  -10,  -25,  70,   0,  100,    0, false },
+                                           {-0.5f,  -40,   25,  65,   0,  100,    0, false },
+                                           {-2.0f,  -50,    0,  35,   0,  100,    0, false },
+                                           { 1.0f,    0,    0,  50,   0,  100,    0, true  }});
+        addPreset("Half-Time", 100.0f, {{ 0.5f,  -10,    0,  85,   0,  100,    0, false },
+                                        { 1.0f,    0,  -30,  65,   0,  100,    0, true  },
+                                        {-1.0f,    0,   30,  60,   0,  100,    0, true  },
+                                        { 2.0f,    0,    0,  50,   0,  100,    0, true  }});
+        addPreset("Stutter Grid", 70.0f, {{ 1.0f,    0,  -60,  70,   0, 12.5f, 0, false },
+                                          { 1.0f,   20,  -20,  65,  25, 31.25f, 0, false },
+                                          {-1.0f,  -20,   20,  65,  50, 56.25f, 0, false },
+                                          { 2.0f,   30,   60,  45,  75, 87.5f, 0, false }});
+        addPreset("Ping-Pong Tape", 50.0f, {{ 1.0f,    0,  -50,  70,  10,   60,    1, false },
+                                            { 0.5f,  -30,   50,  65,  30,   80,    1, false },
+                                            {-1.0f,  -15,    0,  55,   0,   50,    1, false },
+                                            { 2.0f,   15,    0,  40,  50,  100,    1, true  }});
+        addPreset("Tape Chorus", 40.0f, {{ 1.0f,     0,    0,  70,   0,  100,    0, false },
+                                         { 0.98f,  -10,  -60,  60,   0,  100,    0, false },
+                                         { 1.02f,   10,   60,  60,   0,  100,    0, false },
+                                         { 0.5f,   -40,    0,  30,   0,  100,    0, true  }});
+    }
+
     // ----- Record (SPEC 3.2) -----
     // Record is a TOGGLE, not a momentary button: it stays ON (lit) while armed or recording.
     //   Length = Free:    tap on = start now; tap off = stop. Auto-stops at 30 s.
@@ -537,19 +780,16 @@ private:
             back.L[(size_t)(back.length - 1 - k)] *= g;
             back.R[(size_t)(back.length - 1 - k)] *= g;
         }
-        const int oldLen = chunk_[front_].length;
-        for (Stream& s : streams_)
-        {
-            const double prop = oldLen > 1 ? s.head / (double)(oldLen - 1) : 0.0;
-            s.head = prop * (double)(back.length > 1 ? back.length - 1 : 0);
-            s.started = false;   // re-place at in/out point against the new chunk
-        }
+        // Each stream's current playhead becomes a "ghost" that keeps playing the OLD chunk
+        // while the new one fades in (SPEC 3.3, ~20 ms equal power). The new playhead starts
+        // at its in point (out point if reversed) on the next frame - for a bar-synced take
+        // that is exactly the bar line the take ended on.
+        ghostLen_ = chunk_[front_].length;
+        for (Stream& s : streams_) { s.ghost = s.ph; s.started = false; }
         front_ = 1 - front_;
-        frontOut_.store(front_, std::memory_order_relaxed);
+        frontOut_.store(front_, std::memory_order_release);
         waveGen_.fetch_add(1, std::memory_order_release);   // UI worker recomputes the waveform
-        swapFade_ = 0.0f;                                 // fade the wet back in after the swap
-        swapRamp_ = 1.0f / std::max(1.0f, msToSamples(kSwapFadeMs, sampleRate_));
-        swapRising_ = true;
+        xfLeft_ = xfTotal_;
 
         // If recording stopped on its own (hit the 30 s limit) while the button is still
         // held on, turn the button off so it reflects that recording has ended.
@@ -714,7 +954,29 @@ private:
         return p;
     }
 
-    void renderStream(Stream& st, const Chunk& front, int flen, bool advance, float& wetL, float& wetR)
+    // Loop region of every stream in frames of the current chunk (min length enforced).
+    // Cheap arithmetic only; runs once per block and again right after a mid-block swap.
+    void updateRegions(int flen)
+    {
+        const float minLen = msToSamples(kMinRegionMs, sampleRate_);
+        const float minXf  = msToSamples(kMinXfadeMs, sampleRate_);
+        for (int s = 0; s < kNumStreams; ++s)
+        {
+            PlayHead& h = streams_[s].ph;
+            const int b = streamBase(s);
+            float a  = get(b + oIn)  * 0.01f * (float)(flen - 1);
+            float bb = get(b + oOut) * 0.01f * (float)(flen - 1);
+            if (a > bb) std::swap(a, bb);
+            if (bb - a < minLen) bb = clamp(a + minLen, 0.0f, (float)(flen > 0 ? flen - 1 : 0));
+            h.a = a; h.b = bb;
+            const float region = bb - a;
+            h.xf = clamp(kLoopXfadePct * region, minXf, 0.5f * region);
+            h.mode = getInt(b + oMode);
+        }
+    }
+
+    void renderStream(Stream& st, const Chunk& front, int flen, const Chunk& ghostChunk, int ghostLen,
+                      float gNew, float gOld, bool advance, float& wetL, float& wetR)
     {
         const float muteGain = st.muteG.process();
         const float volGain  = st.volG.process();
@@ -728,8 +990,8 @@ private:
 
         if (!st.started)
         {
-            st.head = speed >= 0.0f ? st.a : st.b;
-            st.dir  = speed >= 0.0f ? 1 : -1;
+            st.ph.pos = speed >= 0.0f ? st.ph.a : st.ph.b;
+            st.ph.dir = speed >= 0.0f ? 1 : -1;
             st.started = true;
         }
 
@@ -737,7 +999,16 @@ private:
         const float speedGain = clamp(std::fabs(speed) / 0.02f, 0.0f, 1.0f);
 
         float sL, sR;
-        readStream(st, front, flen, sL, sR);
+        readHead(st.ph, front, flen, sL, sR);
+        if (ghostLen > 0)   // just after a swap: old chunk out, new chunk in
+        {
+            float oL, oR;
+            readHead(st.ghost, ghostChunk, ghostLen, oL, oR);
+            sL = gNew * sL + gOld * oL;
+            sR = gNew * sR + gOld * oR;
+            if (advance) advanceHead(st.ghost, speed, ghostLen);
+        }
+        else if (gNew < 1.0f) { sL *= gNew; sR *= gNew; }   // first take: just fade in
 
         // Tilt tone: one-pole split, cheap per-sample; the +-6 dB gains were set per block.
         const float lowL = st.toneLP_L.process(sL); const float highL = sL - lowL;
@@ -750,51 +1021,7 @@ private:
         wetR += sR * g * pgr;
 
         if (!advance) return;   // transport stopped: hold the head in place
-
-        // Advance and wrap. Loop wrapping accounts for the end->start overlap crossfade length.
-        st.head += (double)std::fabs(speed) * st.dir;
-        const double a = st.a, b = st.b, xf = st.xf;
-        if (st.mode == 0)   // Loop
-        {
-            if (st.dir > 0 && st.head >= b)      st.head = (a + xf) + (st.head - b);
-            else if (st.dir < 0 && st.head <= a) st.head = (b - xf) - (a - st.head);
-        }
-        else                // Ping-pong: reflect at the ends (position-continuous, low click)
-        {
-            if (st.dir > 0 && st.head >= b)      { st.head = b - (st.head - b); st.dir = -1; }
-            else if (st.dir < 0 && st.head <= a) { st.head = a + (a - st.head); st.dir = +1; }
-        }
-        st.head = clamp(st.head, 0.0, (double)(flen - 1));
-    }
-
-    // Read one stereo sample. In Loop mode, the last `xf` frames before the region end are
-    // equal-power crossfaded with the region start, so the loop point is seamless (SPEC item:
-    // ~10% of the loop runtime). sqrt() is a cheap hardware op and only runs inside the fade zone.
-    void readStream(const Stream& st, const Chunk& front, int flen, float& outL, float& outR)
-    {
-        const double hp = st.head, a = st.a, b = st.b, xf = st.xf;
-        float mL = sampleAt(front.L, flen, hp);
-        float mR = sampleAt(front.R, flen, hp);
-        if (st.mode == 0 && xf > 1.0)
-        {
-            if (st.dir > 0 && hp > b - xf)
-            {
-                const float t = clamp((float)((hp - (b - xf)) / xf), 0.0f, 1.0f);
-                const double wp = a + (hp - (b - xf));
-                const float gM = std::sqrt(1.0f - t), gW = std::sqrt(t);
-                mL = gM * mL + gW * sampleAt(front.L, flen, wp);
-                mR = gM * mR + gW * sampleAt(front.R, flen, wp);
-            }
-            else if (st.dir < 0 && hp < a + xf)
-            {
-                const float t = clamp((float)(((a + xf) - hp) / xf), 0.0f, 1.0f);
-                const double wp = b - ((a + xf) - hp);
-                const float gM = std::sqrt(1.0f - t), gW = std::sqrt(t);
-                mL = gM * mL + gW * sampleAt(front.L, flen, wp);
-                mR = gM * mR + gW * sampleAt(front.R, flen, wp);
-            }
-        }
-        outL = mL; outR = mR;
+        advanceHead(st.ph, speed, flen);
     }
 
     static void equalPowerMix(float mix, float& gDry, float& gWet)
@@ -808,7 +1035,7 @@ private:
     {
         Stream& st = streams_[s];
         const int b = streamBase(s);
-        st.speedS.snap(get(b + oSpeed));
+        st.speedS.snap(speedFromKnob(get(b + oSpeed)));
         st.volG.snap(volumeGain(get(b + oVolume)));
         float pl, pr; equalPowerPan(clamp(get(b + oPan) * 0.01f, -1.0f, 1.0f), pl, pr);
         st.panLG.snap(pl); st.panRG.snap(pr);
@@ -841,8 +1068,15 @@ private:
     bool armed_ = false;            // bar-synced: waiting for the next bar line
     int  armBars_ = 0, armTarget_ = kMaxFrames;
 
-    float swapFade_ = 1.0f, swapRamp_ = 0.0f;
-    bool  swapRising_ = false;
+    // Old->new chunk crossfade after a swap (SPEC 3.3): frames left / total, old chunk length.
+    int xfLeft_ = 0, xfTotal_ = 882, ghostLen_ = 0;
+
+    // Project-load staging (SPEC 9): loadExtraState() (UI thread) fills stage_L_/R_, reset()
+    // (audio thread) swaps them in. stage_ hands the buffers over without a lock.
+    enum { kStageIdle = 0, kStageWriting, kStageReady, kStageSwapping };
+    std::atomic<int>   stage_{kStageIdle};
+    std::vector<float> stage_L_, stage_R_;
+    int                stageLen_ = 0;
 
     // Transport-follow fade (SPEC 3.7).
     float tpGain_ = 0.0f, tpUp_ = 0.0f, tpDown_ = 0.0f;
@@ -869,8 +1103,11 @@ private:
     // UI-worker-only state.
     unsigned lastWaveGen_ = 0;          // waveform recomputed only after a new recording
     unsigned lastFullEvents_ = 0;
-    float    lastPos_[kNumStreams] = { -1.0f, -1.0f, -1.0f, -1.0f };   // -1 = never published
-    float    lastStatus_ = -1.0f;
+    // Start equal to the parameters' defaults (pos 0, "Press Record"), which are already the
+    // truth at construction: no startup publish that could land mid-way through a host's
+    // state restore.
+    float    lastPos_[kNumStreams] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float    lastStatus_ = (float)stPressRecord;
     bool     haveFull_ = false, haveSaveResult_ = false, saveResultFailed_ = false;
     std::chrono::steady_clock::time_point fullAt_{}, saveResultAt_{};
 };

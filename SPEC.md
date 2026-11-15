@@ -154,6 +154,12 @@ Implement snapping in the parameter's mapping, not in the UI: the normalized 0�
 
 Value text: two decimals with a multiplication sign, e.g. `1.00×`, `−0.50×`, `0.00×`.
 
+**As built (2026-11-14):**
+- The parameter stores a *knob position* from −8 to +8, not the speed. `speedFromKnob()` maps it through knots |x| 0→0, 1→0.5×, 2→1×, 4→2×, 8→8×. A straight −8…+8 line would squeeze 0–0.5× into 3% of the travel, leaving no room for the plateaus.
+- Each landmark has a flat plateau of ±0.16 knob units, about 2% of the travel.
+- The value text uses a plain `x` (`1.00x`) because the MPC font's support for `×` is unconfirmed.
+- The knots are part of saved-project identity: changing them changes how existing projects sound.
+
 ---
 
 ## 5. Parameters

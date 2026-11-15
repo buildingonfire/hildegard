@@ -6,7 +6,7 @@ Hildegard records a chunk of the audio passing through its track into a frozen b
 then plays that buffer back through four independent tape-style playheads ("streams"),
 each with its own speed, direction, loop region, tone, pan and volume. Think of it as a
 controllable multitap delay and resampler: catch a phrase, bend it four ways, fold it
-back into the mix. See `SPEC.md` for the full design.
+back into the mix. See `SPEC.md` for the full design and `docs/UI-LAYOUT.md` for the screen.
 
 ## This is a plugin project, not a standalone program
 
@@ -21,40 +21,57 @@ Hildegard's own source — no SDK code. To build it from source:
 **Most people don't need to build it** — grab the packaged `.zip` from this repo's
 Releases and copy the folder onto your MPC (see *Install on an MPC* below).
 
+## Using it
+
+Three pages, on the function keys:
+
+- **F1 Record** (opens here): **Record** (tap to start, tap to stop), **Resample** (off:
+  record the track's input; on: record Hildegard's own output, as heard), **Save** (bounce
+  what you hear to a WAV), **Length** (Free, or 1/2/4/8/16 bars), **Dry/Wet**, and a status line.
+- **F2 Loop**: per stream, **In** and **Out** (the loop region, % of the recording),
+  **Mode** (loop or ping-pong) and **Speed**.
+- **F3 Mix**: per stream, **Tone** (dark ↔ bright tilt), **Pan** and **Volume**.
+
+Tap a stream's name to mute or unmute it. The waveform across the top of every page shows
+the recording, each stream's loop region and where each playhead is.
+
+- **Length = N bars**: tapping Record *arms* it. Recording starts on the next bar line (or
+  when you press Play) and stops by itself after N bars. Tap again while armed to cancel.
+  If the MPC gives no tempo, bar lengths behave like Free. Maximum is 30 seconds.
+- **Speed** runs from −8× to +8× (negative = reverse, 0 = hold and silent). The knob
+  pauses briefly on **0, ±0.5×, ±1× and ±2×** as you turn through them, and gives the
+  slow end more room than the fast end.
+- **Transport**: streams play while the MPC plays, fade out and hold on Stop, and restart
+  from their in points on Play. The dry signal always passes.
+- **Save** writes a 24-bit/44.1 kHz stereo WAV of the *effected* sound (one loop length)
+  to `Hildegard Loops/` at the root of the drive Hildegard is installed on.
+- **Projects** keep the recording: saving an MPC project stores the recorded chunk with
+  it (about 5 MB for a full 30 s take), so reopening the project brings the loop back.
+- **Presets**: Init, Octave Stack, Reverse Swell, Half-Time, Stutter Grid, Ping-Pong Tape,
+  Tape Chorus. Presets change the knobs only; they never touch the recording.
+
 ## Status (honest)
 
-Early development (v0.1.0, pre-release). Built against `SPEC.md`, following its build order.
+Early development (v0.1.0, pre-release).
 
-**Working now — the engine core (SPEC build-order steps 2–3), verified in the host
-simulator, an offline render, and by ear on a real MPC Live III:**
-- 30-second stereo double buffer; Free-length record + buffer swap (currently a short
-  wet fade-in across the swap, not yet the per-stream old→new chunk crossfade).
-- Four streams: 4-point Hermite interpolation, tape speed −8×…+8× including reverse and
-  hold-at-zero (fades to silence), loop (seamless end→start crossfade, default 10% of the
-  loop length) and ping-pong.
-- Per stream: tilt tone (~700 Hz), equal-power pan, square-law volume, mute; global
-  dry/wet; wet soft clip; parameter smoothing.
-- **Transport-follow** (SPEC §3.7): streams play when the MPC transport runs; on Stop they
-  fade out and hold position (the recorded loop is kept in memory, not lost), and resume
-  on Play. Dry always passes.
-- **Save to disk**: Save bounces the *effected output* — what you hear, the four streams
-  processed and mixed — captured live over one loop length, written as a 24-bit/44.1 kHz
-  stereo WAV to `Hildegard Loops/` at the drive root (timestamped, never overwriting) on a
-  background thread, with a `Content/Saved/` fallback. Files load straight into MPC kits or
-  audio tracks. (A clean/raw-chunk save option could be added as a switch later.)
-- Realtime-clean: no allocation/locks/IO in `process()`; buffers allocated once in
-  `prepare()`; no per-sample transcendentals in the inner loop. ~0.1% CPU per instance on
-  a desktop (Gen-1 ARM not yet benchmarked).
+**Heard and checked on a real MPC Live III:** the engine (recording, four streams, speed
+and reverse, loop with its crossfade, ping-pong, tone, pan, volume, mute, dry/wet, soft
+clip), transport-follow, Save to `Hildegard Loops/`, and that plugin-written display
+values redraw when the plugin notifies the MPC.
 
-**Not implemented yet (later build-order steps):**
-- Display parameters (positions, status, 128-bar waveform) and the on-screen refresh —
-  the mechanism is proven (notify the host) but not wired in. The current `ui.json` is a
-  placeholder of generic sliders, not the hand-written skin from SPEC §7.
-- Bar-synced recording (Length = N bars); Free-length recording works now.
-- The speed-knob plateau/snapping curve (speed is a plain linear parameter for now).
-- Project-chunk state (saving the chunk with the project), built-in presets.
-- On-screen Save feedback ("Saving"/"Saved") arrives with the display-parameter layer;
-  for now the saved file simply appears in the browser.
+**Built and tested offline only, not yet on the device** (host simulator, `tools/validate.py`
+and the `_verify/` driver):
+- The hand-written skin (`skins/`): the three pages, waveform, loop spans, playhead
+  markers, status text, mute dimming, Q-Link maps.
+- Bar-synced recording.
+- The sample-accurate take swap with a ~20 ms per-stream crossfade from the old recording
+  to the new one (no click; the new take starts on the bar line it ended on).
+- The speed-knob curve and snapping.
+- Saving the recording with the project, and the built-in presets.
+- If the MPC resets the plugin when its transport stops, a take in progress is now kept
+  (as if Record had been tapped off) instead of being thrown away.
+
+**Not done yet:** final colour pass; CPU benchmark on Gen-1 (32-bit) MPCs; release packaging.
 
 **To confirm (SPEC §16):** the square-law volume taper and the tone range.
 
@@ -65,9 +82,10 @@ python tools/build.py plugins/Hildegard
 .sdk-tools/host_sim <build/native/hildegard.*> test --wav build/test.wav
 ```
 
-`_verify/` holds a throwaway offline driver that records a test tone and renders the
-streams playing it back (the host simulator can't script Record); it is not part of the
-plugin. Delete it once the engine is trusted.
+`tools/gen_skin.py` regenerates `skins/` (TUI.json, Q-Links.json and the PNGs); rerun it
+after changing the layout or colours. `_verify/render.cpp` is an offline driver that
+scripts Record, transport, state save/load and presets (the host simulator can't), and
+prints PASS/FAIL per check; it is not part of the plugin.
 
 ## Install on an MPC
 
@@ -80,5 +98,7 @@ Third-party plugins run unsandboxed: a plugin crash takes the whole MPC down.
 
 - `plugin.json` — manifest. `uid` (`BfHg`) must match the C++ `uniqueId`; never change it after release.
 - `src/Hildegard.cpp` — parameters and DSP.
-- `ui.json` — placeholder screen layout (to be replaced by a hand-written skin).
+- `skins/` — the hand-written touch-screen skin (generated by `tools/gen_skin.py`); it
+  replaces anything `ui.json` would generate.
+- `docs/UI-LAYOUT.md` — the locked screen layout.
 - `build/`, `dist/` — build output and zips (gitignored).

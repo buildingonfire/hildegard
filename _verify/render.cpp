@@ -1,11 +1,10 @@
-// _verify/render.cpp - throwaway offline driver to hear Hildegard's engine core.
+// _verify/render.cpp - offline driver for the parts of Hildegard the host simulator can't script.
 //
-// NOT part of the plugin. The host simulator can't script parameter changes, so this
-// mini-host loads the built native DLL, records a 0.5 s test tone into Hildegard, stops
-// (triggering the buffer swap), opens the dry/wet fully wet, unmutes all four streams,
-// then renders ~2 s of the streams playing the recorded chunk back. It writes a WAV and
-// prints peak/RMS so we can confirm the engine makes finite, non-silent sound before
-// putting it on the MPC. Delete _verify/ once the engine is trusted.
+// NOT part of the plugin. This mini-host loads the built native DLL and drives it like the
+// MPC would: record a take, play, stop, resume, Save; bar-synced recording; the speed-knob
+// curve (via the display text); presets; project state save/load; a reset mid-take; and the
+// old->new chunk crossfade on a swap. Each check prints PASS/FAIL; the exit code is non-zero
+// on any FAIL. It also writes a WAV of the first playback for listening.
 //
 // Build (from repo root), then run:
 //   <zig> c++ -std=c++17 -I framework plugins/Hildegard/_verify/render.cpp -o plugins/Hildegard/build/verify.exe
@@ -18,6 +17,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -215,6 +215,161 @@ int main(int argc, char** argv)
 
     std::printf("  bar-sync: %s\n", barFails == 0 ? "ALL PASS" : "FAILURES");
 
+    // ---------------------------------------------------------------------------------
+    // Speed knob mapping (SPEC 4): read the display text the MPC would show.
+    // ---------------------------------------------------------------------------------
+    int otherFails = 0;
+    auto check = [&](const char* what, bool ok) { std::printf("  %-62s %s\n", what, ok ? "PASS" : "FAIL"); if (!ok) ++otherFails; };
+    auto speedText = [&](float norm) {
+        static char buf[64]; buf[0] = 0;
+        e->setParameter(e, 5, norm);              // Speed 1
+        disp(effGetParamDisplay, 5, 0, buf);
+        return std::string(buf);
+    };
+    // knob x in -8..8 -> norm = (x + 8) / 16
+    auto nx = [](double x) { return (float)((x + 8.0) / 16.0); };
+    check("speed: knob centre = 0.00x",            speedText(nx(0.0))  == "0.00x");
+    check("speed: plateau around 0 (x=0.12)",      speedText(nx(0.12)) == "0.00x");
+    check("speed: plateau at 0.5x (x=0.9)",        speedText(nx(0.9))  == "0.50x");
+    check("speed: plateau at 1x (x=2.1)",          speedText(nx(2.1))  == "1.00x");
+    check("speed: plateau at -2x (x=-4.1)",        speedText(nx(-4.1)) == "-2.00x");
+    check("speed: between landmarks moves (x=3)",  speedText(nx(3.0))  == "1.50x");
+    check("speed: full right = 8.00x",             speedText(1.0f)     == "8.00x");
+    {
+        // default of a fresh instance: Speed 1 = 1x, Speed 3 = -1x
+        AEffect* e2 = entry(&hostCb);
+        char b1[64] = {0}, b3[64] = {0};
+        e2->dispatcher(e2, effOpen, 0, 0, nullptr, 0.0f);
+        e2->dispatcher(e2, effGetParamDisplay, 5, 0, b1, 0.0f);
+        e2->dispatcher(e2, effGetParamDisplay, 5 + 2 * 8, 0, b3, 0.0f);
+        check("speed: defaults read 1.00x and -1.00x", std::string(b1) == "1.00x" && std::string(b3) == "-1.00x");
+        e2->dispatcher(e2, effClose, 0, 0, nullptr, 0.0f);
+    }
+    e->setParameter(e, 5, nx(2.0));
+
+    // Presets: "Octave Stack" (program 1) sets Speed 2 to 0.5x and unmutes stream 2.
+    {
+        char sp2[64] = {0}, m2[64] = {0}, name[64] = {0};
+        disp(effSetProgram, 0, 1);
+        disp(effGetProgramName, 0, 0, name);
+        disp(effGetParamDisplay, 5 + 8, 0, sp2);
+        disp(effGetParamDisplay, 5 + 8 + 7, 0, m2);
+        check("preset: program 1 is \"Octave Stack\"", std::string(name) == "Octave Stack");
+        check("preset: it sets Speed 2 = 0.50x and unmutes stream 2",
+              std::string(sp2) == "0.50x" && std::string(m2) == "Active");
+        disp(effSetProgram, 0, 0);
+        e->setParameter(e, 5, nx(2.0));
+    }
+
+    // ---------------------------------------------------------------------------------
+    // Project state (SPEC 9): record a take, save the chunk, wipe it with another take,
+    // reload -> the first take is back. Then save -> load -> save is byte-identical.
+    // ---------------------------------------------------------------------------------
+    auto getChunk = [&](std::vector<uint8_t>& out) {
+        void* p = nullptr;
+        const VstIntPtr n = disp(effGetChunk, 0, 0, &p);
+        out.assign((uint8_t*)p, (uint8_t*)p + n);
+    };
+    auto setChunk = [&](std::vector<uint8_t>& in) { disp(effSetChunk, 0, (VstIntPtr)in.size(), in.data()); };
+    auto recordFree = [&](double seconds, float level) {
+        e->setParameter(e, kLength, 0.0f);       // Free
+        e->setParameter(e, kRecord, 1.0f);
+        for (int b = 0; b < (int)(seconds * kSR / kBlock); ++b) {
+            for (int i = 0; i < kBlock; ++i) { inL[i] = level; inR[i] = -level; }
+            e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock;
+        }
+        e->setParameter(e, kRecord, 0.0f);
+        e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock;
+    };
+    auto wetLevel = [&]() {                      // steady output level, input silent, all wet
+        e->setParameter(e, kDryWet, 1.0f);
+        double pk = 0.0;
+        for (int b = 0; b < 40; ++b) {
+            for (int i = 0; i < kBlock; ++i) { inL[i] = 0.0f; inR[i] = 0.0f; }
+            e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock;
+            if (b >= 20) for (int i = 0; i < kBlock; ++i) pk = std::fmax(pk, std::fabs((double)outL[i]));
+        }
+        return pk;
+    };
+
+    disp(effMainsChanged, 0, 0); disp(effMainsChanged, 0, 1);
+    g_playing = true;
+    for (int s = 0; s < 4; ++s) e->setParameter(e, muteIdx(s), s == 0 ? 0.0f : 1.0f);
+    recordFree(0.5, 0.5f);
+    const double levelA = wetLevel();
+    std::vector<uint8_t> saved; getChunk(saved);
+    recordFree(0.5, 0.1f);
+    const double levelB = wetLevel();
+    setChunk(saved);
+    const double levelC = wetLevel();
+    std::printf("  state: take A level %.3f, take B %.3f, after reload %.3f, chunk %zu bytes\n", levelA, levelB, levelC, saved.size());
+    check("state: chunk includes the recorded audio (> 80 KB for 0.5 s)", saved.size() > 80000);
+    check("state: reloading restores take A", std::fabs(levelC - levelA) < 0.02 && std::fabs(levelB - levelA) > 0.1);
+
+    std::vector<uint8_t> again; getChunk(again);
+    bool same = again == saved;
+    if (!same) {   // name the parameters that differ
+        size_t pos = 12; uint32_t n = saved[8] | saved[9] << 8 | saved[10] << 16 | saved[11] << 24;
+        for (uint32_t k = 0; k < n && pos < saved.size() && pos < again.size(); ++k) {
+            const uint8_t L = saved[pos];
+            std::string id((const char*)&saved[pos + 1], L);
+            if (std::memcmp(&saved[pos], &again[pos], 1 + L + 8) != 0) std::printf("    differs: %s\n", id.c_str());
+            pos += 1 + L + 8;
+        }
+        if (std::memcmp(saved.data() + pos, again.data() + pos, std::min(saved.size(), again.size()) - pos) != 0)
+            std::printf("    differs: extra state\n");
+    }
+    check("state: save -> load -> save is byte-identical", same);
+
+    // A take in progress survives a reset (the MPC may reset the plugin on transport stop).
+    e->setParameter(e, kRecord, 1.0f);
+    for (int b = 0; b < (int)(0.3 * kSR / kBlock); ++b) {
+        for (int i = 0; i < kBlock; ++i) { inL[i] = 0.4f; inR[i] = 0.4f; }
+        e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock;
+    }
+    disp(effMainsChanged, 0, 0); disp(effMainsChanged, 0, 1);   // reset() mid-take
+    std::vector<uint8_t> afterReset; getChunk(afterReset);
+    // 0.3 s take = ~13230 frames x 4 bytes in the chunk, vs 0.5 s (~88 KB) for take A
+    check("reset mid-take keeps the take and releases Record",
+          e->getParameter(e, kRecord) < 0.5f && afterReset.size() > 40000 && afterReset.size() < saved.size());
+
+    // Swap crossfade: a new take must not click. Record a steady tone, play, record a second
+    // tone of different level; the biggest sample-to-sample jump around the swap stays small.
+    {
+        e->setParameter(e, kDryWet, 1.0f);
+        auto toneTake = [&](double amp) {
+            e->setParameter(e, kRecord, 1.0f);
+            double ph = 0.0;
+            for (int b = 0; b < (int)(0.5 * kSR / kBlock); ++b) {
+                for (int i = 0; i < kBlock; ++i) { inL[i] = inR[i] = (float)(amp * std::sin(ph)); ph += 2.0 * 3.14159265358979 * 220.0 / kSR; }
+                e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock;
+            }
+        };
+        toneTake(0.5);
+        e->setParameter(e, kRecord, 0.0f);
+        for (int b = 0; b < 30; ++b) { for (int i = 0; i < kBlock; ++i) inL[i] = inR[i] = 0.0f; e->processReplacing(e, ins, outs, kBlock); }
+        // second take recorded from a phase-shifted tone; capture output around the swap
+        e->setParameter(e, kRecord, 1.0f);
+        double ph = 1.3;
+        for (int b = 0; b < (int)(0.5 * kSR / kBlock); ++b) {
+            for (int i = 0; i < kBlock; ++i) { inL[i] = inR[i] = (float)(0.2 * std::sin(ph)); ph += 2.0 * 3.14159265358979 * 330.0 / kSR; }
+            e->processReplacing(e, ins, outs, kBlock);
+        }
+        e->setParameter(e, kRecord, 0.0f);
+        // dry/wet is 100% wet, so the output is the streams only; input silent from here
+        double maxJump = 0.0; float prev = outL[kBlock - 1];
+        for (int b = 0; b < 20; ++b) {
+            for (int i = 0; i < kBlock; ++i) inL[i] = inR[i] = 0.0f;
+            e->processReplacing(e, ins, outs, kBlock);
+            for (int i = 0; i < kBlock; ++i) { maxJump = std::fmax(maxJump, std::fabs((double)outL[i] - prev)); prev = outL[i]; }
+        }
+        // a 220 Hz sine at <= ~0.4 peak moves at most ~0.013 per sample; a click would be >> that
+        std::printf("  swap: largest sample-to-sample step after the swap = %.4f\n", maxJump);
+        check("swap: old->new chunk crossfade has no click", maxJump < 0.05);
+    }
+
+    std::printf("  other checks: %s\n", otherFails == 0 ? "ALL PASS" : "FAILURES");
+
     disp(effMainsChanged, 0, 0);
     disp(effClose);
 
@@ -251,5 +406,5 @@ int main(int argc, char** argv)
         std::fclose(f);
         std::printf("wrote %s\n", argv[2]);
     }
-    return (bad || barFails) ? 1 : 0;
+    return (bad || barFails || otherFails) ? 1 : 0;
 }
