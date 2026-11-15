@@ -9495,7 +9495,7 @@
                         "height": 24.0
                       },
                       "colour": "ffececee",
-                      "justification": "left verticallyCentred",
+                      "justification": "horizontallyCentred verticallyCentred",
                       "case": "Upper Case"
                     },
                     "type": "Name",
@@ -9512,7 +9512,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "20 14 260 30"
+                  "bounds": "8 14 284 30"
                 }
               }
             ]
@@ -9588,14 +9588,14 @@
                         "version": 1,
                         "name": "Titillium Web",
                         "style": "SemiBold",
-                        "height": 24.0
+                        "height": 20.0
                       },
                       "colour": "ffececee",
-                      "justification": "left verticallyCentred",
+                      "justification": "horizontallyCentred verticallyCentred",
                       "case": "Upper Case"
                     },
                     "type": "Name",
-                    "handleName": "WithName[Speed]/Parameter 0"
+                    "handleName": "WithName[Playback Speed Ratios]/Parameter 0"
                   }
                 },
                 "handle remapping": {
@@ -9608,7 +9608,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "20 14 260 30"
+                  "bounds": "8 14 284 30"
                 }
               }
             ]
@@ -9701,7 +9701,7 @@
                         "height": 24.0
                       },
                       "colour": "ffececee",
-                      "justification": "left verticallyCentred",
+                      "justification": "horizontallyCentred verticallyCentred",
                       "case": "Upper Case"
                     },
                     "type": "Name",
@@ -9718,7 +9718,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "24 16 300 30"
+                  "bounds": "24 14 878 30"
                 }
               },
               {
@@ -9738,7 +9738,7 @@
                         "height": 44.0
                       },
                       "colour": "ffececee",
-                      "justification": "right verticallyCentred",
+                      "justification": "horizontallyCentred verticallyCentred",
                       "case": "Original"
                     },
                     "type": "Value",
@@ -9755,7 +9755,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "613 40 289 56"
+                  "bounds": "24 46 878 56"
                 }
               },
               {
@@ -9865,43 +9865,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -9925,7 +9888,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -10005,43 +10005,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -10065,7 +10028,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -10131,43 +10131,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 4 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "loop",
                   "type": "Button",
                   "data": {
@@ -10190,7 +10153,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 42 130 36"
+                  "bounds": "16 38 130 36"
                 }
               },
               {
@@ -10219,7 +10182,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 42 130 36"
+                  "bounds": "154 38 130 36"
                 }
               }
             ]
@@ -10299,43 +10262,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -10359,7 +10285,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -10439,43 +10402,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -10499,7 +10425,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -10565,43 +10528,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 4 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "loop",
                   "type": "Button",
                   "data": {
@@ -10624,7 +10550,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 42 130 36"
+                  "bounds": "16 38 130 36"
                 }
               },
               {
@@ -10653,7 +10579,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 42 130 36"
+                  "bounds": "154 38 130 36"
                 }
               }
             ]
@@ -10733,43 +10659,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -10793,7 +10682,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -10873,43 +10799,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -10933,7 +10822,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -10999,43 +10925,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 4 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "loop",
                   "type": "Button",
                   "data": {
@@ -11058,7 +10947,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 42 130 36"
+                  "bounds": "16 38 130 36"
                 }
               },
               {
@@ -11087,7 +10976,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 42 130 36"
+                  "bounds": "154 38 130 36"
                 }
               }
             ]
@@ -11167,43 +11056,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -11227,7 +11079,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -11307,43 +11196,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -11367,7 +11219,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -11433,43 +11322,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 4 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "loop",
                   "type": "Button",
                   "data": {
@@ -11492,7 +11344,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 42 130 36"
+                  "bounds": "16 38 130 36"
                 }
               },
               {
@@ -11521,7 +11373,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 42 130 36"
+                  "bounds": "154 38 130 36"
                 }
               }
             ]
@@ -11601,43 +11453,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -11661,7 +11476,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -11741,43 +11593,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -11801,7 +11616,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -11867,43 +11719,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 4 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "loop",
                   "type": "Button",
                   "data": {
@@ -11926,7 +11741,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 42 130 36"
+                  "bounds": "16 38 130 36"
                 }
               },
               {
@@ -11955,7 +11770,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 42 130 36"
+                  "bounds": "154 38 130 36"
                 }
               }
             ]
@@ -12035,43 +11850,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -12095,7 +11873,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -12175,43 +11990,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -12235,7 +12013,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -12301,43 +12116,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 4 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "loop",
                   "type": "Button",
                   "data": {
@@ -12360,7 +12138,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 42 130 36"
+                  "bounds": "16 38 130 36"
                 }
               },
               {
@@ -12389,7 +12167,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 42 130 36"
+                  "bounds": "154 38 130 36"
                 }
               }
             ]
@@ -12469,43 +12247,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -12529,7 +12270,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -12609,43 +12387,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -12669,7 +12410,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -12735,43 +12513,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff8a8a90",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 4 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "loop",
                   "type": "Button",
                   "data": {
@@ -12794,7 +12535,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 42 130 36"
+                  "bounds": "16 38 130 36"
                 }
               },
               {
@@ -12823,7 +12564,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 42 130 36"
+                  "bounds": "154 38 130 36"
                 }
               }
             ]
@@ -12903,43 +12644,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -12963,7 +12667,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -13043,43 +12784,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 6 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "bar",
                   "type": "Slider",
                   "data": {
@@ -13103,7 +12807,44 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 48 268 22"
+                  "bounds": "16 36 268 18"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -13169,43 +12910,6 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "value",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "Regular",
-                        "height": 20.0
-                      },
-                      "colour": "ff5e5e64",
-                      "justification": "right verticallyCentred",
-                      "case": "Original"
-                    },
-                    "type": "Value",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "150 4 134 34"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
                   "name": "loop",
                   "type": "Button",
                   "data": {
@@ -13228,7 +12932,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "16 42 130 36"
+                  "bounds": "16 38 130 36"
                 }
               },
               {
@@ -13257,7 +12961,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "154 42 130 36"
+                  "bounds": "154 38 130 36"
                 }
               }
             ]
@@ -15181,7 +14885,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -15198,7 +14902,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 264 130 34",
+                "bounds": "64 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
               }
             },
@@ -15249,7 +14953,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -15266,7 +14970,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 264 130 34",
+                "bounds": "64 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
               }
             },
@@ -15317,7 +15021,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -15334,7 +15038,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 354 130 34",
+                "bounds": "64 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
               }
             },
@@ -15385,7 +15089,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -15402,7 +15106,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 354 130 34",
+                "bounds": "64 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
               }
             },
@@ -15453,7 +15157,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -15470,7 +15174,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 442 130 34",
+                "bounds": "64 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
               }
             },
@@ -15521,7 +15225,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -15538,7 +15242,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 442 130 34",
+                "bounds": "64 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
               }
             },
@@ -15589,11 +15293,11 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Speed]/Parameter 0"
+                  "handleName": "WithName[Speed Ratio]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -15606,7 +15310,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 534 130 34",
+                "bounds": "64 530 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
               }
             },
@@ -15657,11 +15361,11 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Speed]/Parameter 0"
+                  "handleName": "WithName[Speed Ratio]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -15674,7 +15378,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 534 130 34",
+                "bounds": "64 530 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
               }
             },
@@ -15859,7 +15563,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -15876,7 +15580,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 264 130 34",
+                "bounds": "377 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
               }
             },
@@ -15927,7 +15631,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -15944,7 +15648,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 264 130 34",
+                "bounds": "377 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
               }
             },
@@ -15995,7 +15699,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16012,7 +15716,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 354 130 34",
+                "bounds": "377 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
               }
             },
@@ -16063,7 +15767,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16080,7 +15784,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 354 130 34",
+                "bounds": "377 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
               }
             },
@@ -16131,7 +15835,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16148,7 +15852,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 442 130 34",
+                "bounds": "377 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
               }
             },
@@ -16199,7 +15903,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16216,7 +15920,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 442 130 34",
+                "bounds": "377 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
               }
             },
@@ -16267,11 +15971,11 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Speed]/Parameter 0"
+                  "handleName": "WithName[Speed Ratio]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -16284,7 +15988,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 534 130 34",
+                "bounds": "377 530 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
               }
             },
@@ -16335,11 +16039,11 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Speed]/Parameter 0"
+                  "handleName": "WithName[Speed Ratio]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -16352,7 +16056,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 534 130 34",
+                "bounds": "377 530 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
               }
             },
@@ -16537,7 +16241,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16554,7 +16258,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 264 130 34",
+                "bounds": "690 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
               }
             },
@@ -16605,7 +16309,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16622,7 +16326,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 264 130 34",
+                "bounds": "690 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
               }
             },
@@ -16673,7 +16377,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16690,7 +16394,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 354 130 34",
+                "bounds": "690 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
               }
             },
@@ -16741,7 +16445,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16758,7 +16462,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 354 130 34",
+                "bounds": "690 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
               }
             },
@@ -16809,7 +16513,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16826,7 +16530,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 442 130 34",
+                "bounds": "690 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
               }
             },
@@ -16877,7 +16581,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -16894,7 +16598,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 442 130 34",
+                "bounds": "690 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
               }
             },
@@ -16945,11 +16649,11 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Speed]/Parameter 0"
+                  "handleName": "WithName[Speed Ratio]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -16962,7 +16666,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 534 130 34",
+                "bounds": "690 530 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
               }
             },
@@ -17013,11 +16717,11 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Speed]/Parameter 0"
+                  "handleName": "WithName[Speed Ratio]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17030,7 +16734,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 534 130 34",
+                "bounds": "690 530 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
               }
             },
@@ -17215,7 +16919,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -17232,7 +16936,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 264 130 34",
+                "bounds": "1003 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
               }
             },
@@ -17283,7 +16987,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -17300,7 +17004,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 264 130 34",
+                "bounds": "1003 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
               }
             },
@@ -17351,7 +17055,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -17368,7 +17072,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 354 130 34",
+                "bounds": "1003 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
               }
             },
@@ -17419,7 +17123,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -17436,7 +17140,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 354 130 34",
+                "bounds": "1003 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
               }
             },
@@ -17487,7 +17191,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -17504,7 +17208,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 442 130 34",
+                "bounds": "1003 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
               }
             },
@@ -17555,7 +17259,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -17572,7 +17276,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 442 130 34",
+                "bounds": "1003 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
               }
             },
@@ -17623,11 +17327,11 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Speed]/Parameter 0"
+                  "handleName": "WithName[Speed Ratio]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17640,7 +17344,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 534 130 34",
+                "bounds": "1003 530 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
               }
             },
@@ -17691,11 +17395,11 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Speed]/Parameter 0"
+                  "handleName": "WithName[Speed Ratio]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17708,7 +17412,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 534 130 34",
+                "bounds": "1003 530 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
               }
             }
@@ -17945,7 +17649,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -17962,7 +17666,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 264 130 34",
+                "bounds": "64 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
               }
             },
@@ -18013,7 +17717,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18030,7 +17734,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 264 130 34",
+                "bounds": "64 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
               }
             },
@@ -18081,7 +17785,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18098,7 +17802,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 354 130 34",
+                "bounds": "64 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
               }
             },
@@ -18149,7 +17853,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18166,7 +17870,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 354 130 34",
+                "bounds": "64 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
               }
             },
@@ -18217,7 +17921,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18234,7 +17938,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 444 130 34",
+                "bounds": "64 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
               }
             },
@@ -18285,7 +17989,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18302,7 +18006,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 444 130 34",
+                "bounds": "64 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
               }
             },
@@ -18487,7 +18191,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18504,7 +18208,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 264 130 34",
+                "bounds": "377 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
               }
             },
@@ -18555,7 +18259,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18572,7 +18276,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 264 130 34",
+                "bounds": "377 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
               }
             },
@@ -18623,7 +18327,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18640,7 +18344,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 354 130 34",
+                "bounds": "377 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
               }
             },
@@ -18691,7 +18395,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18708,7 +18412,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 354 130 34",
+                "bounds": "377 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
               }
             },
@@ -18759,7 +18463,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18776,7 +18480,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 444 130 34",
+                "bounds": "377 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
               }
             },
@@ -18827,7 +18531,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -18844,7 +18548,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "377 444 130 34",
+                "bounds": "377 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
               }
             },
@@ -19029,7 +18733,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19046,7 +18750,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 264 130 34",
+                "bounds": "690 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
               }
             },
@@ -19097,7 +18801,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19114,7 +18818,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 264 130 34",
+                "bounds": "690 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
               }
             },
@@ -19165,7 +18869,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19182,7 +18886,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 354 130 34",
+                "bounds": "690 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
               }
             },
@@ -19233,7 +18937,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19250,7 +18954,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 354 130 34",
+                "bounds": "690 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
               }
             },
@@ -19301,7 +19005,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19318,7 +19022,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 444 130 34",
+                "bounds": "690 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
               }
             },
@@ -19369,7 +19073,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19386,7 +19090,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "690 444 130 34",
+                "bounds": "690 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
               }
             },
@@ -19571,7 +19275,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19588,7 +19292,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 264 130 34",
+                "bounds": "1003 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
               }
             },
@@ -19639,7 +19343,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19656,7 +19360,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 264 130 34",
+                "bounds": "1003 260 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
               }
             },
@@ -19707,7 +19411,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19724,7 +19428,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 354 130 34",
+                "bounds": "1003 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
               }
             },
@@ -19775,7 +19479,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19792,7 +19496,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 354 130 34",
+                "bounds": "1003 350 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
               }
             },
@@ -19843,7 +19547,7 @@
                       "height": 24.0
                     },
                     "colour": "ffececee",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19860,7 +19564,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 444 130 34",
+                "bounds": "1003 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
               }
             },
@@ -19911,7 +19615,7 @@
                       "height": 24.0
                     },
                     "colour": "ff5e5e64",
-                    "justification": "left verticallyCentred",
+                    "justification": "horizontallyCentred verticallyCentred",
                     "case": "Upper Case"
                   },
                   "type": "Name",
@@ -19928,7 +19632,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "1003 444 130 34",
+                "bounds": "1003 440 212 30",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
               }
             }

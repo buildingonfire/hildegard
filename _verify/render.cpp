@@ -231,18 +231,20 @@ int main(int argc, char** argv)
     // Speed Scale (param 170): Octaves = 0, Ratios = 0.5, Smooth = 1 (normalised choice index).
     const int kScale = 170;
     e->setParameter(e, kScale, 0.0f);   // Octaves (default)
-    check("octaves: knob centre = 0.00x",            speedText(nx(0.0))  == "0.00x");
-    check("octaves: very slow holds (x=0.1)",        speedText(nx(0.1))  == "0.00x");
-    check("octaves: x=0.5 -> 0.25x",                 speedText(nx(0.5))  == "0.25x");
-    check("octaves: x=2.1 -> 1.00x",                 speedText(nx(2.1))  == "1.00x");
-    check("octaves: x=3 (1.5x smooth) -> 2.00x",     speedText(nx(3.0))  == "2.00x");
-    check("octaves: x=-4.1 -> -2.00x",               speedText(nx(-4.1)) == "-2.00x");
-    check("octaves: full right = 8.00x",             speedText(1.0f)     == "8.00x");
+    check("octaves: knob centre = 0.00x",            speedText(nx(0.0))  == "0.00x  hold");
+    check("octaves: very slow holds (x=0.1)",        speedText(nx(0.1))  == "0.00x  hold");
+    check("octaves: x=0.5 -> 0.25x",                 speedText(nx(0.5))  == "0.25x  - 2 octaves");
+    check("octaves: x=2.1 -> 1.00x",                 speedText(nx(2.1))  == "1.00x  unison");
+    check("octaves: x=3 (1.5x smooth) -> 2.00x",     speedText(nx(3.0))  == "2.00x  + 1 octave");
+    check("octaves: x=-4.1 -> -2.00x",               speedText(nx(-4.1)) == "-2.00x  + 1 octave");
+    check("octaves: full right = 4.00x (cap)",       speedText(1.0f)     == "4.00x  + 2 octaves");
     e->setParameter(e, kScale, 0.5f);   // Ratios
-    check("ratios: x=3 -> 1.50x",                    speedText(nx(3.0))  == "1.50x");
-    check("ratios: x=1.4 (0.7x smooth) -> 0.67x",    speedText(nx(1.4))  == "0.67x");
-    check("ratios: x=5 (3.5x smooth) -> 4.00x",      speedText(nx(5.0))  == "4.00x");
-    check("ratios: x=-1.5 (0.75x smooth) -> -0.67x", speedText(nx(-1.5)) == "-0.67x");
+    check("ratios: x=3 -> 1.50x",                    speedText(nx(3.0))  == "1.50x  + 1 fifth");
+    check("ratios: x=1.4 (0.7x smooth) -> 0.67x",    speedText(nx(1.4))  == "0.67x  - 1 fifth");
+    check("ratios: x=5 (2.5x smooth) -> 3.00x",      speedText(nx(5.0))  == "3.00x  + 1 octave & a fifth");
+    check("ratios: x=-1.5 (0.75x smooth) -> -0.67x", speedText(nx(-1.5)) == "-0.67x  - 1 fifth");
+    check("ratios: x=0.667 (1/3) -> octave & fifth down", speedText(nx(0.667)) == "0.33x  - 1 octave & a fifth");
+    check("ratios: x=0.25 (1/8) -> 3 octaves down",       speedText(nx(0.25))  == "0.12x  - 3 octaves");
     e->setParameter(e, kScale, 1.0f);   // Smooth
     check("smooth: x=2.1 -> 1.05x (no snapping)",    speedText(nx(2.1))  == "1.05x");
     check("smooth: x=0.1 -> 0.05x",                  speedText(nx(0.1))  == "0.05x");
@@ -255,7 +257,7 @@ int main(int argc, char** argv)
         e2->dispatcher(e2, effOpen, 0, 0, nullptr, 0.0f);
         e2->dispatcher(e2, effGetParamDisplay, 5, 0, b1, 0.0f);
         e2->dispatcher(e2, effGetParamDisplay, 5 + 2 * 8, 0, b3, 0.0f);
-        check("speed: defaults read 1.00x and -1.00x", std::string(b1) == "1.00x" && std::string(b3) == "-1.00x");
+        check("speed: defaults read 1.00x and -1.00x", std::string(b1) == "1.00x  unison" && std::string(b3) == "-1.00x  unison");
         e2->dispatcher(e2, effClose, 0, 0, nullptr, 0.0f);
     }
     e->setParameter(e, 5, nx(2.0));
@@ -269,7 +271,7 @@ int main(int argc, char** argv)
         disp(effGetParamDisplay, 5 + 8 + 7, 0, m2);
         check("preset: program 1 is \"Octave Stack\"", std::string(name) == "Octave Stack");
         check("preset: it sets Speed 2 = 0.50x and unmutes stream 2",
-              std::string(sp2) == "0.50x" && std::string(m2) == "Active");
+              std::string(sp2) == "0.50x  - 1 octave" && std::string(m2) == "Active");
         disp(effSetProgram, 0, 0);
         e->setParameter(e, 5, nx(2.0));
     }
@@ -379,6 +381,30 @@ int main(int argc, char** argv)
         // a 220 Hz sine at <= ~0.4 peak moves at most ~0.013 per sample; a click would be >> that
         std::printf("  swap: largest sample-to-sample step after the swap = %.4f\n", maxJump);
         check("swap: old->new chunk crossfade has no click", maxJump < 0.05);
+    }
+
+    // Tone = DJ filter: the current take is a 330 Hz tone. Full right (HP to 3 kHz) must cut it
+    // hard; centre must leave it alone; full left (LP to 200 Hz) must also cut it clearly.
+    {
+        g_playing = true;
+        for (int s = 0; s < 4; ++s) e->setParameter(e, muteIdx(s), s == 0 ? 0.0f : 1.0f);
+        e->setParameter(e, 5, nx(2.1));                  // Speed 1 = 1x
+        auto rmsAtTone = [&](float toneNorm) {
+            e->setParameter(e, 6, toneNorm);             // Tone 1 (norm 0.5 = centre)
+            for (int b = 0; b < 40; ++b) { for (int i = 0; i < kBlock; ++i) inL[i] = inR[i] = 0.0f; e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock; }
+            double sum = 0.0; int cnt = 0;
+            for (int b = 0; b < 40; ++b) {
+                for (int i = 0; i < kBlock; ++i) inL[i] = inR[i] = 0.0f;
+                e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock;
+                for (int i = 0; i < kBlock; ++i) { sum += (double)outL[i] * outL[i]; ++cnt; }
+            }
+            return 20.0 * std::log10(std::sqrt(sum / cnt) + 1e-12);
+        };
+        const double flat = rmsAtTone(0.5f), hp = rmsAtTone(1.0f), lp = rmsAtTone(0.0f);
+        std::printf("  tone: centre %.1f dB, full right (HP) %.1f dB, full left (LP) %.1f dB\n", flat, hp, lp);
+        check("tone: full right cuts a 330 Hz loop by > 20 dB", flat - hp > 20.0);
+        check("tone: full left cuts a 330 Hz loop by > 6 dB",   flat - lp > 6.0);
+        e->setParameter(e, 6, 0.5f);
     }
 
     // Live speed sign (device bug 2026-11-15): turning Speed negative WHILE playing must reverse

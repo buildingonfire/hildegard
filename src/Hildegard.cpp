@@ -17,7 +17,7 @@
 // display parameters (37-169) that drive the hand-written skin in skins/.
 //   Done here: 30 s double buffer, Free-length record + buffer swap, four streams with
 //     4-point Hermite interpolation, tape speed (incl. reverse and hold-at-zero),
-//     loop + ping-pong with declick crossfades, tilt tone, equal-power pan, perceptual
+//     loop + ping-pong with declick crossfades, DJ-filter tone (LP/HP), equal-power pan, perceptual
 //     volume, muting, dry/wet, wet soft clip, parameter smoothing, transport-follow,
 //     save-to-disk, and the display parameters (head positions, status, waveform).
 //   Also: bar-synced record (Length = N bars: arm, start on the next bar line, stop
@@ -43,6 +43,7 @@
 #include "dsp/math.h"
 #include "dsp/onepole.h"
 #include "dsp/smoother.h"
+#include "dsp/svf.h"
 
 #include <algorithm>
 #include <atomic>
@@ -106,12 +107,12 @@ constexpr float kPlayOutMs    = 10.0f;     // stream fade-out when the transport
 // ---------------------------------------------------------------------------
 // Speed knob (SPEC Section 4). The stored parameter is a KNOB POSITION x in -8..8, not the
 // speed itself; speedFromKnob() turns it into the playback speed, in two steps:
-//   1. A smooth curve that gives the slow end more room:
-//      |x| 0-1 -> 0-0.5x, 1-2 -> 0.5-1x, 2-4 -> 1-2x, 4-8 -> 2-8x
+//   1. A smooth curve that gives the slow end more room, capped at 4x (2026-11-15):
+//      |x| 0-1 -> 0-0.5x, 1-2 -> 0.5-1x, 2-4 -> 1-2x, 4-8 -> 2-4x
 //      (a straight -8..8 line squeezes 0..0.5x into 3% of the knob).
 //   2. The global Speed Scale (param 170, on the RECORD tab) then snaps that speed:
-//      Octaves - to the nearest of 1/4, 1/2, 1, 2, 4, 8x (always in key with the take);
-//      Ratios  - to the nearest whole-number ratio 1/8 .. 8x (adds fifths, fourths, twelfths);
+//      Octaves - to the nearest of 1/4, 1/2, 1, 2, 4x (always in key with the take);
+//      Ratios  - to the nearest whole-number ratio 1/8 .. 4x (adds fifths and twelfths);
 //      Smooth  - no snapping (detune, tape-warble, experimental).
 //      Snapping is nearest-in-log (musical distance); below ~0.08x it holds (0x).
 // Being in the mapping, it works the same for touch, Q-Links, wheel and automation. The
@@ -120,12 +121,32 @@ constexpr float kPlayOutMs    = 10.0f;     // stream fade-out when the transport
 // ---------------------------------------------------------------------------
 constexpr int   kSpeedKnots = 5;
 constexpr float kSpeedKnobX[kSpeedKnots] = { 0.0f, 1.0f, 2.0f, 4.0f, 8.0f };
-constexpr float kSpeedValue[kSpeedKnots] = { 0.0f, 0.5f, 1.0f, 2.0f, 8.0f };
+constexpr float kSpeedValue[kSpeedKnots] = { 0.0f, 0.5f, 1.0f, 2.0f, 4.0f };
 
 enum SpeedScale { kScaleOctaves = 0, kScaleRatios, kScaleSmooth };
-constexpr float kOctaveSet[] = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f };
+constexpr float kOctaveSet[] = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
 constexpr float kRatioSet[]  = { 1.0f / 8, 1.0f / 4, 1.0f / 3, 1.0f / 2, 2.0f / 3, 1.0f,
-                                 3.0f / 2, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f };
+                                 3.0f / 2, 2.0f, 3.0f, 4.0f };
+
+// The musical interval of a snapped speed (pitch is |speed|; direction does not change it).
+// Every set member is octaves (2^n) or octaves plus a fifth (3 * 2^n).
+inline std::string intervalName(float v)
+{
+    const float av = std::fabs(v);
+    if (av < 0.001f) return "hold";
+    auto isInt = [](float y) { return std::fabs(y - std::round(y)) < 0.01f; };
+    const bool fifth = isInt(std::log2(av / 3.0f)) || isInt(std::log2(av * 3.0f));   // 3*2^n up, 2^n/3 down
+    // Octave count: 7 semitones is the fifth; whole octaves are what is left over.
+    const float semis = 12.0f * std::log2(av);               // e.g. 1.5x = +7.02, 1/3 = -19.02
+    const int   sign = semis >= 0.0f ? 1 : -1;
+    const float a = std::fabs(semis);
+    const int   oct = fifth ? (int)std::floor((a - 7.0f) / 12.0f + 0.01f) : (int)std::lround(a / 12.0f);
+    if (!fifth && oct == 0) return "unison";
+    std::string s = sign > 0 ? "+ " : "- ";
+    if (oct > 0) s += std::to_string(oct) + (oct == 1 ? " octave" : " octaves");
+    if (fifth)   s += oct > 0 ? " & a fifth" : "1 fifth";
+    return s;
+}
 constexpr float kHoldBelow = 0.08f;   // snapped modes: slower than this = hold (0x)
 
 inline float smoothSpeed(float ax)    // step 1, |x| -> |speed|
@@ -263,22 +284,46 @@ struct Stream
     bool     started = false;
 
     Smoother speedS;            // speed value (frames/frame)
-    Smoother volG, panLG, panRG, gLowG, gHighG, muteG;   // smoothed gains
-    OnePoleLP toneLP_L, toneLP_R;   // fixed ~700 Hz tilt crossover
+    Smoother volG, panLG, panRG, muteG;   // smoothed gains
+
+    // Tone = DJ filter (2026-11-15; was a +-6 dB tilt that was too subtle). Tone -1..+1:
+    //   left  -> 12 dB/oct low-pass, cutoff 20 kHz -> 200 Hz (exponential sweep);
+    //   right -> 12 dB/oct high-pass, cutoff 20 Hz -> 3 kHz;
+    //   resonance rises slightly toward the ends. Near the centre the filter is cross-faded
+    //   out (fully dry inside +-2%, fully filtered beyond +-10%), so the LP/HP switch at 0 is
+    //   inaudible and the centre is truly flat. Coefficients update once per block.
+    mpc::dsp::SVF toneL, toneR;
+    float toneAmt = 0.0f;          // block-rate smoothed Tone, -1..+1
+    float toneMix = 0.0f;          // 0 = dry, 1 = filtered (this block)
+    bool  toneHP = false;          // which output this block uses
+    float sr_ = 44100.0f;
 
     void prepare(double sr)
     {
+        sr_ = (float)sr;
         speedS.setTime(20.0f, sr);
-        gLowG.setTime(20.0f, sr); gHighG.setTime(20.0f, sr);
         panLG.setTime(50.0f, sr); panRG.setTime(50.0f, sr);
         volG.setTime(50.0f, sr);
         muteG.setTime(10.0f, sr);
-        toneLP_L.setCutoff(700.0f, sr); toneLP_R.setCutoff(700.0f, sr);
+        toneL.setSampleRate(sr); toneR.setSampleRate(sr);
     }
     void reset()
     {
         ph = PlayHead(); ghost = PlayHead(); started = false;
-        toneLP_L.reset(); toneLP_R.reset();
+        toneL.reset(); toneR.reset();
+    }
+    // Once per block: smooth Tone (~30 ms), then set the filter. Two tan()s per stream per block.
+    void updateTone(float target, int frames, bool snap)
+    {
+        const float c = snap ? 1.0f : 1.0f - std::exp(-(float)frames / (0.03f * sr_));
+        toneAmt += (target - toneAmt) * c;
+        const float a = std::fabs(toneAmt);
+        toneMix = clamp((a - 0.02f) / 0.08f, 0.0f, 1.0f);
+        toneHP = toneAmt > 0.0f;
+        const float hz = toneHP ? 20.0f * std::pow(150.0f, a)          // 20 Hz .. 3 kHz
+                                : 20000.0f * std::pow(0.01f, a);       // 20 kHz .. 200 Hz
+        const float res = 0.1f + 0.3f * a;
+        toneL.set(hz, res); toneR.set(hz, res);
     }
 };
 
@@ -389,7 +434,7 @@ public:
         }
 
         // ----- Appended after the display params (identity: never reorder) -----
-        addParam(choiceParam("speedscale", "Speed Scale", {"Octaves", "Ratios", "Smooth"}, kScaleOctaves));
+        addParam(choiceParam("speedscale", "Speed Ratios", {"Octaves", "Ratios", "Smooth"}, kScaleOctaves));
 
         if (numParams() != kNumParams) mpc::log("Hildegard: parameter count mismatch");
 
@@ -497,9 +542,7 @@ public:
             st.volG.setTarget(volumeGain(get(b + oVolume)));
             float pl, pr; equalPowerPan(clamp(get(b + oPan) * 0.01f, -1.0f, 1.0f), pl, pr);
             st.panLG.setTarget(pl); st.panRG.setTarget(pr);
-            const float amt = clamp(get(b + oTone) * 0.01f, -1.0f, 1.0f);
-            st.gLowG.setTarget(dbToGain(-6.0f * amt));
-            st.gHighG.setTarget(dbToGain(+6.0f * amt));
+            st.updateTone(clamp(get(b + oTone) * 0.01f, -1.0f, 1.0f), n, false);
             st.muteG.setTarget(getBool(b + oMute) ? 0.0f : 1.0f);
         }
         // The front chunk can change MID-BLOCK (a take ends on frame i), so these are refreshed
@@ -606,9 +649,11 @@ public:
         char buf[32];
         if (off == oSpeed)
         {
-            const float v = speedFromKnob(plain, getInt(kSpeedScale));
+            const int   scale = getInt(kSpeedScale);
+            const float v = speedFromKnob(plain, scale);
             std::snprintf(buf, sizeof(buf), "%.2fx", std::fabs(v) < 0.005f ? 0.0 : (double)v);
             out = buf;
+            if (scale != kScaleSmooth) out += "  " + intervalName(v);   // e.g. "1.50x  + 1 fifth"
             return true;
         }
         if (off == oPan)
@@ -1016,8 +1061,6 @@ private:
         const float volGain  = st.volG.process();
         const float pgl = st.panLG.process();
         const float pgr = st.panRG.process();
-        const float gl  = st.gLowG.process();
-        const float gh  = st.gHighG.process();
         const float speed = st.speedS.process();
 
         if (flen <= 0) return;
@@ -1045,11 +1088,14 @@ private:
         }
         else if (gNew < 1.0f) { sL *= gNew; sR *= gNew; }   // first take: just fade in
 
-        // Tilt tone: one-pole split, cheap per-sample; the +-6 dB gains were set per block.
-        const float lowL = st.toneLP_L.process(sL); const float highL = sL - lowL;
-        const float lowR = st.toneLP_R.process(sR); const float highR = sR - lowR;
-        sL = lowL * gl + highL * gh;
-        sR = lowR * gl + highR * gh;
+        // Tone (DJ filter): always run the SVFs so their state stays warm, then blend.
+        {
+            float lp, bp, hp;
+            st.toneL.processAll(sL, lp, bp, hp); const float fL = st.toneHP ? hp : lp;
+            st.toneR.processAll(sR, lp, bp, hp); const float fR = st.toneHP ? hp : lp;
+            sL += (fL - sL) * st.toneMix;
+            sR += (fR - sR) * st.toneMix;
+        }
 
         const float g = muteGain * volGain * speedGain;
         wetL += sL * g * pgl;
@@ -1074,8 +1120,7 @@ private:
         st.volG.snap(volumeGain(get(b + oVolume)));
         float pl, pr; equalPowerPan(clamp(get(b + oPan) * 0.01f, -1.0f, 1.0f), pl, pr);
         st.panLG.snap(pl); st.panRG.snap(pr);
-        const float amt = clamp(get(b + oTone) * 0.01f, -1.0f, 1.0f);
-        st.gLowG.snap(dbToGain(-6.0f * amt)); st.gHighG.snap(dbToGain(+6.0f * amt));
+        st.updateTone(clamp(get(b + oTone) * 0.01f, -1.0f, 1.0f), 0, true);
         st.muteG.snap(getBool(b + oMute) ? 0.0f : 1.0f);
     }
 

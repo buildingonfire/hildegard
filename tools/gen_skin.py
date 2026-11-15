@@ -471,10 +471,12 @@ def control_slot(s, bipolar, lit):
     col = STREAM_RGB[s] if lit else STREAM_DIM[s]
     txt = TEXT_DIM if lit else TEXT_DIMMER
     overlay = "knob overlay bi" if bipolar else "knob overlay"
+    # Three centred rows: caption (a tab-level label, y 2-32), bar (36-54), value (56-82).
     return component(
         [focus_ring(COL_W, SLOT_H, STREAM_RGB[s]),
-         entry("value", "Label", label("Value", text_style(20, txt, "right verticallyCentred")), rect(150, 6, 134, 34)),
-         entry("bar", "Slider", colour_bar(argb(TRACK), argb(LINE), argb(col), bipolar), rect(16, 48, 268, 22))],
+         entry("bar", "Slider", colour_bar(argb(TRACK), argb(LINE), argb(col), bipolar), rect(16, 36, 268, 18)),
+         entry("value", "Label", label("Value", text_style(19, txt, "horizontallyCentred verticallyCentred")),
+               rect(8, 56, 284, 26))],
         actions=[action("Mouse Down", "Q-Link"),
                  action("Double Click", "Show Overlay", extra=overlay),
                  action("Enter Pressed", "Show Overlay", extra=overlay)],
@@ -492,11 +494,11 @@ def mode_slot(s, lit, imgs):
     def btn(on, off, bid):
         return {"version": 2, "onImage": on, "offImage": off, "buttonId": bid, "numButtonsInGroup": 2,
                 "handleName": "Data", "gestureBehaviour": "Instant"}
+    # Caption (tab-level, centred) on top; the lit button shows the value, so no value label.
     return component(
         [focus_ring(COL_W, SLOT_H, STREAM_RGB[s]),
-         entry("value", "Label", label("Value", text_style(20, txt, "right verticallyCentred")), rect(150, 4, 134, 34)),
-         entry("loop", "Button", btn(on_l, off_l, 0), rect(16, 42, 130, 36)),
-         entry("pingpong", "Button", btn(on_p, off_p, 1), rect(154, 42, 130, 36))],
+         entry("loop", "Button", btn(on_l, off_l, 0), rect(16, 38, 130, 36)),
+         entry("pingpong", "Button", btn(on_p, off_p, 1), rect(154, 38, 130, 36))],
         actions=[action("Mouse Down", "Q-Link")],   # no menu: MenuOverlay draws empty on device
         background=argb(PANEL), focus_bg=argb(PANEL_FOCUS))
 
@@ -549,7 +551,8 @@ def wave_band(imgs):
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
-CAPTION = lambda lit: text_style(24, TEXT if lit else TEXT_DIMMER, style="SemiBold", case="Upper Case")
+CAPTION = lambda lit, size=24: text_style(size, TEXT if lit else TEXT_DIMMER, "horizontallyCentred verticallyCentred",
+                                          style="SemiBold", case="Upper Case")
 CAP_DX = 44         # clears the "Q" badge the MPC draws in the Q-Link focus box's top-left corner
 
 
@@ -584,7 +587,7 @@ def stream_slot(s, row, caption, param, kind):
         comp = ("mode_s%d" % (s + 1)) if kind == "mode" else ("ctrl_s%d_%s" % (s + 1, kind))
         comp += "" if lit else "_dim"
         out.append(custom(comp, rect(x, y, COL_W, SLOT_H), [("Data", P(param))], focus="Yes", invalid="Hide", show_if=vis))
-        out.append(text_entry("cap", caption, rect(x + CAP_DX, y + (4 if kind == "mode" else 6), 130, 34), CAPTION(lit), show_if=vis))
+        out.append(text_entry("cap", caption, rect(x + CAP_DX, y + 2, COL_W - 2 * CAP_DX, 30), CAPTION(lit), show_if=vis))
     return out
 
 
@@ -658,12 +661,12 @@ def record_tab():
     return tab("RECORD", 0, kids, [])
 
 
-def caption_tile(h, caption=None):
-    """A panel with a focus ring and a caption: the parameter's name, or fixed text."""
+def caption_tile(h, caption=None, size=24):
+    """A panel with a focus ring and a centred caption: the parameter's name, or fixed text."""
     handle = fixed_text(caption) if caption else "Data"
     return component(
         [focus_ring(300, h, LIT),
-         entry("cap", "Label", label("Name", CAPTION(True), handle), rect(20, 14, 260, 30))],
+         entry("cap", "Label", label("Name", CAPTION(True, size), handle), rect(8, 14, 284, 30))],
         actions=[action("Mouse Down", "Q-Link")],
         background=argb(PANEL), focus_bg=argb(PANEL_FOCUS))
 
@@ -672,9 +675,9 @@ def dry_wet_tile():
     w = DRYWET_W
     return component(
         [focus_ring(w, 198, LIT),
-         entry("cap", "Label", label("Name", CAPTION(True)), rect(24, 16, 300, 30)),
-         entry("value", "Label", label("Value", text_style(44, TEXT, "right verticallyCentred", "SemiBold")),
-               rect(w - 313, 40, 289, 56)),
+         entry("cap", "Label", label("Name", CAPTION(True)), rect(24, 14, w - 48, 30)),
+         entry("value", "Label", label("Value", text_style(44, TEXT, "horizontallyCentred verticallyCentred", "SemiBold")),
+               rect(24, 46, w - 48, 56)),
          entry("bar", "Slider", colour_bar(argb(TRACK), argb(LINE), argb(NEUTRAL_BAR), False), rect(24, 116, w - 48, 44))],
         actions=[action("Mouse Down", "Q-Link"),
                  action("Double Click", "Show Overlay", extra="knob overlay"),
@@ -691,7 +694,7 @@ def tui():
             ("touchShield", component([])),
             ("waveBand", wave_band(IMGS)),
             ("lengthTile", caption_tile(196)),
-            ("scaleTile", caption_tile(198, "Speed")),
+            ("scaleTile", caption_tile(198, "Playback Speed Ratios", 20)),
             ("dryWetTile", dry_wet_tile())]
     for s in range(4):
         for lit in (True, False):
@@ -708,7 +711,7 @@ def tui():
     repl.append((P_SCALE, SCALE_CHOICES))
 
     # Loop: In, Out, Mode, Speed.  Mix: Tone, Pan, Volume, (empty).  docs/UI-LAYOUT.md
-    loop_rows = [("In", O_IN, "uni"), ("Out", O_OUT, "uni"), ("Mode", O_MODE, "mode"), ("Speed", O_SPEED, "bi")]
+    loop_rows = [("In", O_IN, "uni"), ("Out", O_OUT, "uni"), ("Mode", O_MODE, "mode"), ("Speed Ratio", O_SPEED, "bi")]
     mix_rows = [("Tone", O_TONE, "bi"), ("Pan", O_PAN, "bi"), ("Volume", O_VOLUME, "uni"), None]
 
     return {"pageData": {
