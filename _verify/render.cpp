@@ -96,7 +96,7 @@ int main(int argc, char** argv)
     disp(effMainsChanged, 0, 1);
 
     // Parameter indices (SPEC Section 5): record=1, drywet=3; mute = 5 + s*8 + 7.
-    const int kRecord = 1, kDryWet = 3;
+    const int kRecord = 1, kDryWet = 0;   // Dry/Wet is param 0 since 2026-11-15
     auto muteIdx = [](int s) { return 5 + s * 8 + 7; };
 
     std::vector<float> inL(kBlock), inR(kBlock), outL(kBlock), outR(kBlock);
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
 
     // --- bar-synced recording (Length = N bars). 120 bpm 4/4: one bar = 2 s = 88200 frames. ---
     // Position only advances while playing, like a real transport.
-    const int kLength = 0;
+    const int kLength = 3;
     const double kBar = 88200.0;
     auto runTo = [&](double target) {           // process blocks until g_pos >= target
         while (g_pos < target) {
@@ -287,7 +287,7 @@ int main(int argc, char** argv)
     };
     auto setChunk = [&](std::vector<uint8_t>& in) { disp(effSetChunk, 0, (VstIntPtr)in.size(), in.data()); };
     auto recordFree = [&](double seconds, float level) {
-        e->setParameter(e, kLength, 0.0f);       // Free
+        e->setParameter(e, kLength, 0.0f);       // Off (free length)
         e->setParameter(e, kRecord, 1.0f);
         for (int b = 0; b < (int)(seconds * kSR / kBlock); ++b) {
             for (int i = 0; i < kBlock; ++i) { inL[i] = level; inR[i] = -level; }
@@ -335,6 +335,24 @@ int main(int argc, char** argv)
             std::printf("    differs: extra state\n");
     }
     check("state: save -> load -> save is byte-identical", same);
+
+    // Free-length take duration (device report 2026-11-15: "recorded two bars, got one").
+    // Record exactly 2 bars at 120 bpm (4 s), read the take length back from the state chunk.
+    {
+        auto takeFrames = [&]() -> long {
+            std::vector<uint8_t> c; getChunk(c);
+            for (size_t k = 0; k + 16 <= c.size(); ++k)
+                if (std::memcmp(&c[k], "HGC1", 4) == 0)
+                    return (long)(c[k + 12] | c[k + 13] << 8 | c[k + 14] << 16 | (uint32_t)c[k + 15] << 24);
+            return -1;
+        };
+        e->setParameter(e, 3, 0.0f);              // Fixed Loop Length = Off
+        g_playing = true;
+        recordFree(4.0, 0.5f);
+        const long got = takeFrames(), want = (long)(4.0 * kSR);
+        std::printf("  free take: wanted %ld frames (2 bars), got %ld\n", want, got);
+        check("free take: 2 bars recorded = 2 bars kept (within 2 blocks)", std::labs(got - want) <= 2 * kBlock);
+    }
 
     // A take in progress survives a reset (the MPC may reset the plugin on transport stop).
     e->setParameter(e, kRecord, 1.0f);
@@ -438,8 +456,8 @@ int main(int argc, char** argv)
     // Resample records WHAT YOU HEAR, Record records the INPUT. With the input silent and the
     // loop playing, a Record take is silent but a Resample take is not.
     {
-        const int kResample = 2, kLength = 0;
-        e->setParameter(e, kLength, 0.0f);         // Free
+        const int kResample = 2;
+        e->setParameter(e, kLength, 0.0f);         // Off (free length)
         e->setParameter(e, kDryWet, 1.0f);         // all wet: you hear only the streams
         auto takePeak = [&](int button) {
             e->setParameter(e, button, 1.0f);

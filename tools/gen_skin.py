@@ -69,7 +69,7 @@ CLEAR = "00000000"
 # ---------------------------------------------------------------------------
 # Parameter indices (SPEC 5; must match src/Hildegard.cpp)
 # ---------------------------------------------------------------------------
-P_LENGTH, P_RECORD, P_RESAMPLE, P_DRYWET, P_SAVE = 0, 1, 2, 3, 4
+P_DRYWET, P_RECORD, P_RESAMPLE, P_LENGTH, P_SAVE = 0, 1, 2, 3, 4   # Dry/Wet is 0 (host nudges param 0)
 O_SPEED, O_TONE, O_PAN, O_VOLUME, O_IN, O_OUT, O_MODE, O_MUTE = range(8)
 
 
@@ -80,8 +80,11 @@ def sp(s, off):
 P_POS0, P_STATUS, P_WAVE0, N_WAVE = 37, 41, 42, 128
 P_SCALE = 170                     # Speed Scale, appended after the display params
 SCALE_CHOICES = ["Octaves", "Ratios", "Smooth"]
+P_SPDBAR0 = 171                   # 171-174: snapped Speed bar positions (display)
+SNAPPED = ["RangedEnabling/0/1/3/Parameter 170"]       # Speed Ratios = Octaves or Ratios
+SMOOTH = ["IndexedEnabling/2/3/Parameter 170"]
 STATUS_CHOICES = ["Press Record", "Ready", "Armed", "Recording", "Saving", "Saved", "Save failed", "Buffer full"]
-LENGTH_CHOICES = ["Free", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"]
+LENGTH_CHOICES = ["Off", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"]
 
 
 def P(i):
@@ -307,6 +310,7 @@ def make_images():
             c.ring(icx, icy, 25, 5, fg)
             c.rect(icx + 2, icy - 27, icx + 16, icy - 17, bg)            # gap in the ring
             c.tri((icx + 1, icy - 33), (icx + 1, icy - 11), (icx + 15, icy - 22), fg)
+            c.circle(icx, icy, 11, fg)        # Record's dot inside the loop arrow: input + loop
         elif icon == "save":
             c.line(icx, icy - 26, icx, icy + 6, 5, fg)
             c.tri((icx - 14, icy - 2), (icx + 14, icy - 2), (icx, icy + 14), fg)
@@ -472,16 +476,26 @@ def active(s):
 # ---------------------------------------------------------------------------
 # Component definitions
 # ---------------------------------------------------------------------------
-def control_slot(s, bipolar, lit):
-    """A stream control: value text (right) and a full-width bar. The caption is a tab-level label."""
+def control_slot(s, bipolar, lit, speed=False):
+    """A stream control: value text (right) and a full-width bar. The caption is a tab-level label.
+    speed=True: in Octaves/Ratios the visible bar is the snapped position (display param), drawn
+    under an invisible copy of the real bar that takes the touches; in Smooth, the plain bar."""
     col = STREAM_RGB[s] if lit else STREAM_DIM[s]
     txt = TEXT_DIM if lit else TEXT_DIMMER
     overlay = "knob overlay bi" if bipolar else "knob overlay"
+    br = rect(16, 36, 268, 18)
+    real = colour_bar(argb(TRACK), argb(LINE), argb(col), bipolar)
+    if speed:
+        bars = [entry("bar_snap", "Slider", colour_bar(argb(TRACK), argb(LINE), argb(col), False, P(P_SPDBAR0 + s)),
+                      br, show_if=SNAPPED),
+                entry("bar", "Slider", real, br, show_if=SMOOTH),
+                entry("bar_touch", "Slider", colour_bar(CLEAR, CLEAR, CLEAR, False), br, show_if=SNAPPED)]
+    else:
+        bars = [entry("bar", "Slider", real, br)]
     # Three centred rows: caption (a tab-level label, y 2-32), bar (36-54), value (56-82).
     return component(
-        [focus_ring(COL_W, SLOT_H, STREAM_RGB[s]),
-         entry("bar", "Slider", colour_bar(argb(TRACK), argb(LINE), argb(col), bipolar), rect(16, 36, 268, 18)),
-         entry("value", "Label", label("Value", text_style(19, txt, "horizontallyCentred verticallyCentred")),
+        [focus_ring(COL_W, SLOT_H, STREAM_RGB[s])] + bars +
+        [entry("value", "Label", label("Value", text_style(19, txt, "horizontallyCentred verticallyCentred")),
                rect(8, 56, 284, 26))],
         actions=[action("Mouse Down", "Q-Link"),
                  action("Double Click", "Show Overlay", extra=overlay),
@@ -705,6 +719,7 @@ def tui():
             defs.append(("ctrl_s%d_uni%s" % (s + 1, sfx), control_slot(s, False, lit)))
             defs.append(("ctrl_s%d_bi%s" % (s + 1, sfx), control_slot(s, True, lit)))
             defs.append(("mode_s%d%s" % (s + 1, sfx), mode_slot(s, lit, IMGS)))
+            defs.append(("ctrl_s%d_spd%s" % (s + 1, sfx), control_slot(s, False, lit, speed=True)))
 
     repl = [(P_LENGTH, LENGTH_CHOICES), (P_RECORD, ["Off", "On"]), (P_RESAMPLE, ["Off", "On"]),
             (P_SAVE, ["Off", "On"])]
@@ -714,7 +729,7 @@ def tui():
     repl.append((P_SCALE, SCALE_CHOICES))
 
     # Loop: In, Out, Mode, Speed.  Mix: Tone, Pan, Volume, (empty).  docs/UI-LAYOUT.md
-    loop_rows = [("In", O_IN, "uni"), ("Out", O_OUT, "uni"), ("Mode", O_MODE, "mode"), ("Speed Ratio", O_SPEED, "uni")]
+    loop_rows = [("In", O_IN, "uni"), ("Out", O_OUT, "uni"), ("Mode", O_MODE, "mode"), ("Speed Ratio", O_SPEED, "spd")]
     mix_rows = [("Tone", O_TONE, "bi"), ("Pan", O_PAN, "bi"), ("Volume", O_VOLUME, "uni"), None]
 
     return {"pageData": {

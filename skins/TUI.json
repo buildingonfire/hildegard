@@ -10218,6 +10218,209 @@
           }
         },
         {
+          "key": "ctrl_s1_spd",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "ff2a2a30",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "ff222226",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "10ffffff",
+                    "outlineColour": "ffef9f27",
+                    "backgroundInset": 3.0,
+                    "outlineThickness": 2.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 300 84"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_snap",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ffef9f27",
+                    "isBipolar": false,
+                    "handleName": "Parameter 171"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ffef9f27",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/2/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_touch",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "00000000",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
+                }
+              }
+            ]
+          }
+        },
+        {
           "key": "ctrl_s1_uni_dim",
           "value": {
             "version": 2,
@@ -10638,6 +10841,209 @@
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
                   "bounds": "200 38 84 36"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key": "ctrl_s1_spd_dim",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "ff2a2a30",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "ff222226",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "10ffffff",
+                    "outlineColour": "ffef9f27",
+                    "backgroundInset": 3.0,
+                    "outlineThickness": 2.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 300 84"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_snap",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff705226",
+                    "isBipolar": false,
+                    "handleName": "Parameter 171"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff705226",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/2/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_touch",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "00000000",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -11070,6 +11476,209 @@
           }
         },
         {
+          "key": "ctrl_s2_spd",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "ff2a2a30",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "ff222226",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "10ffffff",
+                    "outlineColour": "fffac775",
+                    "backgroundInset": 3.0,
+                    "outlineThickness": 2.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 300 84"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_snap",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "fffac775",
+                    "isBipolar": false,
+                    "handleName": "Parameter 172"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "fffac775",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/2/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_touch",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "00000000",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
+                }
+              }
+            ]
+          }
+        },
+        {
           "key": "ctrl_s2_uni_dim",
           "value": {
             "version": 2,
@@ -11490,6 +12099,209 @@
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
                   "bounds": "200 38 84 36"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key": "ctrl_s2_spd_dim",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "ff2a2a30",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "ff222226",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "10ffffff",
+                    "outlineColour": "fffac775",
+                    "backgroundInset": 3.0,
+                    "outlineThickness": 2.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 300 84"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_snap",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff746144",
+                    "isBipolar": false,
+                    "handleName": "Parameter 172"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff746144",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/2/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_touch",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "00000000",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -11922,6 +12734,209 @@
           }
         },
         {
+          "key": "ctrl_s3_spd",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "ff2a2a30",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "ff222226",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "10ffffff",
+                    "outlineColour": "ff7fb33a",
+                    "backgroundInset": 3.0,
+                    "outlineThickness": 2.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 300 84"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_snap",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff7fb33a",
+                    "isBipolar": false,
+                    "handleName": "Parameter 173"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff7fb33a",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/2/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_touch",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "00000000",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
+                }
+              }
+            ]
+          }
+        },
+        {
           "key": "ctrl_s3_uni_dim",
           "value": {
             "version": 2,
@@ -12342,6 +13357,209 @@
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
                   "bounds": "200 38 84 36"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key": "ctrl_s3_spd_dim",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "ff2a2a30",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "ff222226",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "10ffffff",
+                    "outlineColour": "ff7fb33a",
+                    "backgroundInset": 3.0,
+                    "outlineThickness": 2.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 300 84"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_snap",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff45592e",
+                    "isBipolar": false,
+                    "handleName": "Parameter 173"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff45592e",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/2/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_touch",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "00000000",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
                 }
               }
             ]
@@ -12774,6 +13992,209 @@
           }
         },
         {
+          "key": "ctrl_s4_spd",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "ff2a2a30",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "ff222226",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "10ffffff",
+                    "outlineColour": "ff4a9be8",
+                    "backgroundInset": 3.0,
+                    "outlineThickness": 2.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 300 84"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_snap",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff4a9be8",
+                    "isBipolar": false,
+                    "handleName": "Parameter 174"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff4a9be8",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/2/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_touch",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "00000000",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff8a8a90",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
+                }
+              }
+            ]
+          }
+        },
+        {
           "key": "ctrl_s4_uni_dim",
           "value": {
             "version": 2,
@@ -13198,13 +14619,216 @@
               }
             ]
           }
+        },
+        {
+          "key": "ctrl_s4_spd_dim",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "ff2a2a30",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "ff222226",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "10ffffff",
+                    "outlineColour": "ff4a9be8",
+                    "backgroundInset": 3.0,
+                    "outlineThickness": 2.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 300 84"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_snap",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff315070",
+                    "isBipolar": false,
+                    "handleName": "Parameter 174"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "ff2c2c31",
+                    "outlineColour": "ff3a3a40",
+                    "valueColour": "ff315070",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/2/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "bar_touch",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "00000000",
+                    "isBipolar": false,
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "16 36 268 18",
+                  "additionalInvalidatingHandles": ["RangedEnabling/0/1/3/Parameter 170"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "value",
+                  "type": "Label",
+                  "data": {
+                    "version": 1,
+                    "textStyle": {
+                      "version": 1,
+                      "font": {
+                        "version": 1,
+                        "name": "Titillium Web",
+                        "style": "Regular",
+                        "height": 19.0
+                      },
+                      "colour": "ff5e5e64",
+                      "justification": "horizontallyCentred verticallyCentred",
+                      "case": "Original"
+                    },
+                    "type": "Value",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "8 56 284 26"
+                }
+              }
+            ]
+          }
         }
       ]
     },
     "replacementStrings": [
       {
-        "key": "Parameter 0",
-        "value": ["Free", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"]
+        "key": "Parameter 3",
+        "value": ["Off", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"]
       },
       {
         "key": "Parameter 1",
@@ -13958,7 +15582,7 @@
                 "map": [
                   {
                     "key": "Data",
-                    "value": "Parameter 0"
+                    "value": "Parameter 3"
                   }
                 ]
               },
@@ -13983,7 +15607,7 @@
                   "offImage": "length_off.png",
                   "buttonId": 0,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14021,7 +15645,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Free]/Parameter 0"
+                  "handleName": "WithName[Off]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -14049,7 +15673,7 @@
                   "offImage": "hit_clear.png",
                   "buttonId": 0,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14078,7 +15702,7 @@
                   "offImage": "length_off.png",
                   "buttonId": 1,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14144,7 +15768,7 @@
                   "offImage": "hit_clear.png",
                   "buttonId": 1,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14173,7 +15797,7 @@
                   "offImage": "length_off.png",
                   "buttonId": 2,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14239,7 +15863,7 @@
                   "offImage": "hit_clear.png",
                   "buttonId": 2,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14268,7 +15892,7 @@
                   "offImage": "length_off.png",
                   "buttonId": 3,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14334,7 +15958,7 @@
                   "offImage": "hit_clear.png",
                   "buttonId": 3,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14363,7 +15987,7 @@
                   "offImage": "length_off.png",
                   "buttonId": 4,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14429,7 +16053,7 @@
                   "offImage": "hit_clear.png",
                   "buttonId": 4,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14458,7 +16082,7 @@
                   "offImage": "length_off.png",
                   "buttonId": 5,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14524,7 +16148,7 @@
                   "offImage": "hit_clear.png",
                   "buttonId": 5,
                   "numButtonsInGroup": 6,
-                  "handleName": "Parameter 0",
+                  "handleName": "Parameter 3",
                   "gestureBehaviour": "Instant"
                 }
               },
@@ -14557,7 +16181,7 @@
                 "map": [
                   {
                     "key": "Data",
-                    "value": "Parameter 3"
+                    "value": "Parameter 0"
                   }
                 ]
               },
@@ -15482,8 +17106,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s1_uni",
-                "type": "ctrl_s1_uni",
+                "name": "ctrl_s1_spd",
+                "type": "ctrl_s1_spd",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -15550,8 +17174,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s1_uni_dim",
-                "type": "ctrl_s1_uni_dim",
+                "name": "ctrl_s1_spd_dim",
+                "type": "ctrl_s1_spd_dim",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -16160,8 +17784,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s2_uni",
-                "type": "ctrl_s2_uni",
+                "name": "ctrl_s2_spd",
+                "type": "ctrl_s2_spd",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -16228,8 +17852,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s2_uni_dim",
-                "type": "ctrl_s2_uni_dim",
+                "name": "ctrl_s2_spd_dim",
+                "type": "ctrl_s2_spd_dim",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -16838,8 +18462,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s3_uni",
-                "type": "ctrl_s3_uni",
+                "name": "ctrl_s3_spd",
+                "type": "ctrl_s3_spd",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -16906,8 +18530,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s3_uni_dim",
-                "type": "ctrl_s3_uni_dim",
+                "name": "ctrl_s3_spd_dim",
+                "type": "ctrl_s3_spd_dim",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -17516,8 +19140,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s4_uni",
-                "type": "ctrl_s4_uni",
+                "name": "ctrl_s4_spd",
+                "type": "ctrl_s4_spd",
                 "data": {
                   "version": 1,
                   "handleName": "Data"
@@ -17584,8 +19208,8 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "ctrl_s4_uni_dim",
-                "type": "ctrl_s4_uni_dim",
+                "name": "ctrl_s4_spd_dim",
+                "type": "ctrl_s4_spd_dim",
                 "data": {
                   "version": 1,
                   "handleName": "Data"

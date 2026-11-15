@@ -74,7 +74,9 @@ namespace {
 // Global 0-4, then 8 per stream for streams 1..4 (indices 5..36).
 // Display-only parameters follow (SPEC 5.3): pos1-4 (37-40), status (41), wave000-127 (42-169).
 // ---------------------------------------------------------------------------
-enum Global { kLength = 0, kRecord, kResample, kDryWet, kSave, kNumGlobal };
+// Dry/Wet is parameter 0 because the MPC nudges parameter 0 on every prepare (host contract
+// step 7); Length used to be there (moved 2026-11-15, before any release).
+enum Global { kDryWet = 0, kRecord, kResample, kLength, kSave, kNumGlobal };
 enum StreamOff { oSpeed = 0, oTone, oPan, oVolume, oIn, oOut, oMode, oMute, kPerStream };
 enum StreamMode { kModeForward = 0, kModeReverse, kModePingPong };   // per-stream Mode choices
 
@@ -87,7 +89,8 @@ constexpr int kStatus    = kPos0 + kNumStreams; // 41
 constexpr int kWave0     = kStatus + 1;         // 42..169
 constexpr int kWaveBars  = 128;
 constexpr int kSpeedScale = kWave0 + kWaveBars; // 170: Octaves / Ratios / Smooth (appended 2026-11-15)
-constexpr int kNumParams = kSpeedScale + 1;     // 171
+constexpr int kSpeedBar0 = kSpeedScale + 1;     // 171..174: snapped Speed bar position (display)
+constexpr int kNumParams = kSpeedBar0 + 4;      // 175
 
 // Status choices (SPEC 5.3). Order is permanent: the skin's replacementStrings and the red
 // error label (choices 6-7) depend on it.
@@ -391,10 +394,11 @@ public:
         using namespace mpc;
 
         // ----- Global (0-4) -----
-        addParam(choiceParam("length",   "Length",   {"Free", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"}, 0));
+        // Order = the Global enum. Dry/Wet first: parameter 0 gets nudged by the host.
+        addParam(floatParam ("drywet",   "Dry/Wet",  0.0f, 100.0f, 50.0f, "%", 0));
         addParam(boolParam  ("record",   "Record",   false));
         addParam(boolParam  ("resample", "Resample", false));
-        addParam(floatParam ("drywet",   "Dry/Wet",  0.0f, 100.0f, 50.0f, "%", 0));
+        addParam(choiceParam("length",   "Fixed Loop Length", {"Off", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"}, 0));
         addParam(boolParam  ("save",     "Save",     false));
 
         // ----- Per stream (5-36) -----
@@ -439,6 +443,15 @@ public:
 
         // ----- Appended after the display params (identity: never reorder) -----
         addParam(choiceParam("speedscale", "Speed Ratios", {"Octaves", "Ratios", "Smooth"}, kScaleOctaves));
+        // Display: where each Speed bar should DRAW (0-1). In Octaves/Ratios that is the snapped
+        // speed's knob position, so the bar steps with the value; the skin draws it over an
+        // invisible copy of the real control. Written by the UI worker.
+        for (int s = 0; s < kNumStreams; ++s)
+        {
+            const std::string n = std::to_string(s + 1);
+            addParam(floatParam(("spdbar" + n).c_str(), ("~Speed bar " + n).c_str(), 0.0f, 1.0f,
+                                knobFromSpeed(defSpeed[s]) / 8.0f, "", 3));
+        }
 
         if (numParams() != kNumParams) mpc::log("Hildegard: parameter count mismatch");
 
@@ -742,7 +755,7 @@ private:
     struct StreamPreset { float speed, tone, pan, vol, in, out; int mode; bool mute; };
     void addPreset(const char* name, float dryWet, const StreamPreset (&s)[kNumStreams])
     {
-        std::vector<float> v = { 0.0f /*length Free*/, 0.0f /*record*/, 0.0f /*resample*/, dryWet, 0.0f /*save*/ };
+        std::vector<float> v = { dryWet, 0.0f /*record*/, 0.0f /*resample*/, 0.0f /*length Off*/, 0.0f /*save*/ };
         for (const StreamPreset& p : s)
         {
             // The table below is written the readable way: a signed speed and mode 0 = loop,
@@ -945,12 +958,15 @@ private:
         }
     }
 
-    // Write a display parameter and tell the host, but only when OUR value changed since we
-    // last wrote it (compared against `last`, not the live parameter), so the worker never
-    // fights the host when it writes these parameters itself, e.g. while restoring a project.
+    // Write a display parameter and tell the host when the truth differs from what we last
+    // wrote OR from what the parameter currently holds. Display params mirror live engine
+    // state; if anything else writes one (a project restore, automation, a test host), the
+    // stale value is corrected within one UI tick instead of sticking until the truth moves.
+    // Only writes on a real difference, so it cannot loop with the host.
     void publish(int index, float plain, float epsilon, float& last)
     {
-        if (std::fabs(last - plain) <= epsilon) return;
+        const float cur = get(index);
+        if (std::fabs(last - plain) <= epsilon && std::fabs(cur - plain) <= epsilon) return;
         last = plain;
         set(index, plain);
         notifyHostParameterChanged(index);
@@ -991,6 +1007,14 @@ private:
         // only redraws values the user touches. One page refresh redraws them.
         const int scale = getInt(kSpeedScale);
         if (scale != lastScale_) { lastScale_ = scale; requestDisplayUpdate(); }
+
+        // Snapped Speed bar positions (see kSpeedBar0). Smooth: the knob position itself.
+        for (int s = 0; s < kNumStreams; ++s)
+        {
+            const float x = get(streamBase(s) + oSpeed);           // knob position 0..8
+            const float bar = (scale == kScaleSmooth ? x : knobFromSpeed(speedFromKnob(x, scale))) / 8.0f;
+            publish(kSpeedBar0 + s, clamp(bar, 0.0f, 1.0f), 0.001f, lastSpdBar_[s]);
+        }
     }
 
     // Peak of each 1/128 slice of the front chunk, normalised so the loudest slice is full height.
@@ -1225,6 +1249,7 @@ private:
     float    lastPos_[kNumStreams] = { 0.0f, 0.0f, 0.0f, 0.0f };
     float    lastStatus_ = (float)stPressRecord;
     int      lastScale_ = kScaleOctaves;
+    float    lastSpdBar_[kNumStreams] = { -1.0f, -1.0f, -1.0f, -1.0f };   // -1: publish on the first tick
     std::atomic<bool> releaseButtonsAfterLoad_{false};   // set by loadExtraState, consumed in process()
     bool     haveFull_ = false, haveSaveResult_ = false, saveResultFailed_ = false;
     std::chrono::steady_clock::time_point fullAt_{}, saveResultAt_{};
