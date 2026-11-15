@@ -15389,6 +15389,36 @@
               "version": 2,
               "componentData": {
                 "version": 1,
+                "name": "save_busy",
+                "type": "Button",
+                "data": {
+                  "version": 2,
+                  "onImage": "save_busy.png",
+                  "offImage": "save_busy.png",
+                  "buttonId": 1,
+                  "numButtonsInGroup": 1,
+                  "handleName": "Parameter 4",
+                  "gestureBehaviour": "Instant"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": []
+              },
+              "bounds": {
+                "version": 2,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "646 206 300 196",
+                "additionalInvalidatingHandles": ["IndexedEnabling/4/8/Parameter 41"]
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
                 "name": "save_t0",
                 "type": "Label",
                 "data": {

@@ -317,11 +317,15 @@ def make_images():
             c.line(icx - 26, icy + 10, icx - 26, icy + 24, 5, fg)
             c.line(icx + 26, icy + 10, icx + 26, icy + 24, 5, fg)
             c.line(icx - 26, icy + 24, icx + 26, icy + 24, 5, fg)
+        elif icon == "busy":              # ellipsis: Save while it captures and writes
+            for dx in (-22, 0, 22):
+                c.circle(icx + dx, icy, 6, fg)
         return c
 
     for icon in ("rec", "resample", "save"):
         imgs[icon + "_off"] = tile(False, icon).save("%s_off.png" % icon)
         imgs[icon + "_on"] = tile(True, icon).save("%s_on.png" % icon)
+    imgs["save_busy"] = tile(False, "busy").save("save_busy.png")
 
     # Length choice buttons (3 x 2 grid inside the Length tile).
     # Text stays white on both, so "on" = bright 3 px outline around a lighter fill.
@@ -632,13 +636,17 @@ def record_tab():
     big = lambda rgb: text_style(28, rgb, "horizontallyCentred verticallyCentred", "SemiBold", "Upper Case")
     small = lambda rgb: text_style(18, rgb, "horizontallyCentred verticallyCentred")
 
-    def toggle_tile(x, param, key, title_off, title_on, sub_off, sub_on):
+    def toggle_tile(x, param, key, title_off, title_on, sub_off, sub_on, busy=None):
         btn = {"version": 2, "onImage": IMGS[key + "_on"], "offImage": IMGS[key + "_off"], "buttonId": 1,
                "numButtonsInGroup": 1, "handleName": P(param), "gestureBehaviour": "Instant"}
         off, on = ["IndexedEnabling/0/2/" + P(param)], ["IndexedEnabling/1/2/" + P(param)]
         tr, sr = rect(x, TY + 118, 300, 36), rect(x, TY + 150, 300, 28)
         hit = dict(btn, onImage=IMGS["hit"], offImage=IMGS["hit"])   # labels swallow touches
-        return [entry(key, "Button", btn, rect(x, TY, 300, TH)),
+        # busy = (image, show_if): an opaque copy of the tile with another icon, drawn over the
+        # normal one while show_if holds (Save shows "..." while Status = Saving).
+        over = [] if not busy else [entry(key + "_busy", "Button", dict(btn, onImage=busy[0], offImage=busy[0]),
+                                          rect(x, TY, 300, TH), show_if=busy[1])]
+        return [entry(key, "Button", btn, rect(x, TY, 300, TH))] + over + [
                 text_entry(key + "_t0", title_off, tr, big(TEXT), show_if=off),
                 text_entry(key + "_t1", title_on, tr, big(DARK_TEXT), show_if=on),
                 text_entry(key + "_s0", sub_off, sr, small(TEXT_DIM), show_if=off),
@@ -662,7 +670,9 @@ def record_tab():
     kids += toggle_tile(COL_X[0], P_RECORD, "rec", "Record", "Recording", "Records the input", "Tap to stop")
     kids += toggle_tile(COL_X[1], P_RESAMPLE, "resample", "Resample", "Resampling",
                         "Records input + loop", "Tap to stop")
-    kids += toggle_tile(COL_X[2], P_SAVE, "save", "Save", "Save", "Bounce to Hildegard Loops", "Bounce to Hildegard Loops")
+    saving = ["IndexedEnabling/%d/%d/%s" % (STATUS_CHOICES.index("Saving"), len(STATUS_CHOICES), P(P_STATUS))]
+    kids += toggle_tile(COL_X[2], P_SAVE, "save", "Save", "Save", "Bounce to Hildegard Loops", "Bounce to Hildegard Loops",
+                        busy=(IMGS["save_busy"], saving))
     kids.append(custom("lengthTile", rect(COL_X[3], TY, 300, TH), [("Data", P(P_LENGTH))], focus="Yes"))
     kids += choice_grid("len", P_LENGTH, LENGTH_CHOICES,
                         [(COL_X[3] + LEN_BX[i % 3], TY + LEN_BY[i // 3], LEN_BW, LEN_BH) for i in range(len(LENGTH_CHOICES))],

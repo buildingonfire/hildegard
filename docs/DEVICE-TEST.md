@@ -24,6 +24,8 @@ or program track's insert.
 - [ ] Bars grow both up and down from the centre line.
 - [ ] Each unmuted stream's **loop span** shows in its colour and follows In/Out.
 - [ ] Each stream's **playhead marker** moves smoothly while playing and holds on Stop.
+- [ ] Forward/Reverse loops: the marker wraps to exactly IN (not ~10% in). Inside the loop
+      crossfade it moves at double speed and wraps at the fade's midpoint (display only).
       If it stutters, lower the update rate (`kUiPeriodMs`).
 - [ ] Muting a stream dims its span, its marker and its column, but not its name button.
 
@@ -66,7 +68,8 @@ or program track's insert.
 
 ## 6. Save
 
-- [ ] Save → Saving → Saved. A WAV appears in `Hildegard Loops/`.
+- [ ] Save: the tile's icon turns to three dots (…) while it captures one pass and writes, then
+      back to the Save icon ~0.75 s after the file is written. A WAV appears in `Hildegard Loops/`.
 - [ ] Save on a read-only or removed drive shows "Save failed" in red.
 
 ## 7. Project state

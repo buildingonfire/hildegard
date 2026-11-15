@@ -98,6 +98,8 @@ enum Status { stPressRecord = 0, stReady, stArmed, stRecording, stSaving, stSave
 
 constexpr int    kUiPeriodMs   = 40;     // display updates at most 25 Hz
 constexpr double kFlashSeconds = 3.0;    // how long Saved / Save failed / Buffer full stay up
+constexpr double kSaveHoldSeconds = 0.75; // "Saving" (the Save tile's ... icon) lingers this long
+                                          // after a successful write, so it never just blinks
 
 constexpr int   kMaxFrames    = 1323000;   // 30 s * 44100
 constexpr float kMinRegionMs  = 10.0f;     // shortest loop region
@@ -278,6 +280,29 @@ inline void advanceHead(PlayHead& h, float speed, int len)
         else if (h.move < 0 && h.pos <= a) { h.pos = a + (a - h.pos); h.dir = -h.dir; h.move = +1; }
     }
     h.pos = clamp(h.pos, 0.0, (double)(len > 0 ? len - 1 : 0));
+}
+
+// Where to DRAW the playhead marker (frames). In Forward/Reverse the audio wraps to a + xf,
+// because the loop's first xf frames were already heard inside the end crossfade; drawing the
+// raw position made the marker reappear ~10% into the loop. Instead, inside the crossfade the
+// marker runs at double speed: it reaches the loop end at the fade's midpoint (where both sides
+// are equally loud), wraps to exactly the loop start, and arrives at a + xf as the fade ends.
+// Outside the fade it is the true position. Display only; audio is unchanged.
+inline double displayPos(const PlayHead& h)
+{
+    const double hp = h.pos, a = h.a, b = h.b, xf = h.xf;
+    if (h.mode == kModePingPong || xf <= 1.0) return hp;
+    if (h.move > 0 && hp > b - xf)
+    {
+        const double mid = b - 0.5 * xf;
+        return hp < mid ? (b - xf) + 2.0 * (hp - (b - xf)) : a + 2.0 * (hp - mid);
+    }
+    if (h.move < 0 && hp < a + xf)
+    {
+        const double mid = a + 0.5 * xf;
+        return hp > mid ? (a + xf) - 2.0 * ((a + xf) - hp) : b - 2.0 * (mid - hp);
+    }
+    return hp;
 }
 
 // One tape stream reading the front chunk. All smoothers below hold *gains* (or the
@@ -651,7 +676,7 @@ public:
         // Publish state for the UI worker (lock-free; it turns these into display params).
         const int flenNow = chunk_[front_].length;
         for (int s = 0; s < kNumStreams; ++s)
-            posOut_[s].store(flenNow > 1 ? (float)(streams_[s].ph.pos / (double)(flenNow - 1)) : 0.0f,
+            posOut_[s].store(flenNow > 1 ? (float)(displayPos(streams_[s].ph) / (double)(flenNow - 1)) : 0.0f,
                              std::memory_order_relaxed);
         hasChunkOut_.store(flenNow > 0, std::memory_order_relaxed);
         recordingOut_.store(recording_, std::memory_order_relaxed);
@@ -984,7 +1009,9 @@ private:
         int st;
         if (recordingOut_.load(std::memory_order_relaxed))                                    st = stRecording;
         else if (armedOut_.load(std::memory_order_relaxed))                                   st = stArmed;
-        else if (capturingOut_.load(std::memory_order_relaxed) || saveReq_.load(std::memory_order_acquire) >= 0) st = stSaving;
+        else if (capturingOut_.load(std::memory_order_relaxed) || saveReq_.load(std::memory_order_acquire) >= 0
+                 || (haveSaveResult_ && !saveResultFailed_
+                     && std::chrono::duration<double>(now - saveResultAt_).count() < kSaveHoldSeconds)) st = stSaving;
         else if (recent(haveSaveResult_, saveResultAt_) && saveResultFailed_)                   st = stSaveFailed;
         else if (recent(haveFull_, fullAt_))                                                    st = stBufferFull;
         else if (recent(haveSaveResult_, saveResultAt_))                                        st = stSaved;
