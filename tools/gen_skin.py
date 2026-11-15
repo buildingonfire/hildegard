@@ -587,9 +587,9 @@ def stream_header(s, imgs):
     r = rect(x, NAME_Y, COL_W, NAME_H)
     return [
         entry("stream%d_mute" % (s + 1), "Button", btn, r),
-        text_entry("stream%d_active" % (s + 1), "Stream %d - Active" % (s + 1), r,
+        text_entry("stream%d_active" % (s + 1), "Playhead %d - Active" % (s + 1), r,
                    text_style(22, DARK_TEXT, "horizontallyCentred verticallyCentred", "SemiBold"), show_if=active(s)),
-        text_entry("stream%d_muted" % (s + 1), "Stream %d - Muted" % (s + 1), r,
+        text_entry("stream%d_muted" % (s + 1), "Playhead %d - Muted" % (s + 1), r,
                    text_style(22, TEXT, "horizontallyCentred verticallyCentred", "SemiBold"), show_if=muted(s)),
         entry("stream%d_mute_hit" % (s + 1), "Button", hit, r, focus="Yes"),
     ]

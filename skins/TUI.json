@@ -16610,7 +16610,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 1 - Active]/Parameter 0"
+                  "handleName": "WithName[Playhead 1 - Active]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -16648,7 +16648,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 1 - Muted]/Parameter 0"
+                  "handleName": "WithName[Playhead 1 - Muted]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17288,7 +17288,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 2 - Active]/Parameter 0"
+                  "handleName": "WithName[Playhead 2 - Active]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17326,7 +17326,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 2 - Muted]/Parameter 0"
+                  "handleName": "WithName[Playhead 2 - Muted]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17966,7 +17966,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 3 - Active]/Parameter 0"
+                  "handleName": "WithName[Playhead 3 - Active]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18004,7 +18004,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 3 - Muted]/Parameter 0"
+                  "handleName": "WithName[Playhead 3 - Muted]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18644,7 +18644,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 4 - Active]/Parameter 0"
+                  "handleName": "WithName[Playhead 4 - Active]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18682,7 +18682,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 4 - Muted]/Parameter 0"
+                  "handleName": "WithName[Playhead 4 - Muted]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -19374,7 +19374,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 1 - Active]/Parameter 0"
+                  "handleName": "WithName[Playhead 1 - Active]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -19412,7 +19412,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 1 - Muted]/Parameter 0"
+                  "handleName": "WithName[Playhead 1 - Muted]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -19916,7 +19916,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 2 - Active]/Parameter 0"
+                  "handleName": "WithName[Playhead 2 - Active]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -19954,7 +19954,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 2 - Muted]/Parameter 0"
+                  "handleName": "WithName[Playhead 2 - Muted]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -20458,7 +20458,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 3 - Active]/Parameter 0"
+                  "handleName": "WithName[Playhead 3 - Active]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -20496,7 +20496,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 3 - Muted]/Parameter 0"
+                  "handleName": "WithName[Playhead 3 - Muted]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -21000,7 +21000,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 4 - Active]/Parameter 0"
+                  "handleName": "WithName[Playhead 4 - Active]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -21038,7 +21038,7 @@
                     "case": "Original"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Stream 4 - Muted]/Parameter 0"
+                  "handleName": "WithName[Playhead 4 - Muted]/Parameter 0"
                 }
               },
               "handle remapping": {

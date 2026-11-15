@@ -422,23 +422,21 @@ public:
             addParam(boolParam  (("s" + n + "_mute").c_str(),   ("Mute " + n).c_str(),   defMute[s]));
         }
 
-        // ----- Display-only (37-169), written by the UI worker, read by the skin -----
-        // Names start with "~" so they sort to the end of the MPC's parameter lists.
+        // ----- Display-only (37-169, 171-174), written by the UI worker, read by the skin -----
+        // Hidden from the user (2026-11-15: they cluttered Project Q-Link assignment lists): not
+        // automatable and NO NAME. The skin binds them by index, never by name. (Their ids
+        // stay, for state.) If the MPC stops redrawing the playhead markers because they are
+        // not automatable, make pos1-4 automatable again: they rely on the notify path.
+        auto display = [this](mpc::Param p) { p.automatable = false; p.name = ""; addParam(p); };
         for (int s = 0; s < kNumStreams; ++s)
-        {
-            const std::string n = std::to_string(s + 1);
-            addParam(floatParam(("pos" + n).c_str(), ("~Pos " + n).c_str(), 0.0f, 1.0f, 0.0f, "", 3));
-        }
-        addParam(choiceParam("status", "~Status",
-                             {"Press Record", "Ready", "Armed", "Recording", "Saving", "Saved", "Save failed", "Buffer full"}, 0));
+            display(floatParam(("pos" + std::to_string(s + 1)).c_str(), "", 0.0f, 1.0f, 0.0f, "", 3));
+        display(choiceParam("status", "",
+                            {"Press Record", "Ready", "Armed", "Recording", "Saving", "Saved", "Save failed", "Buffer full"}, 0));
         for (int i = 0; i < kWaveBars; ++i)
         {
-            char id[16], nm[16];
+            char id[16];
             std::snprintf(id, sizeof(id), "wave%03d", i);
-            std::snprintf(nm, sizeof(nm), "~Wave %03d", i);
-            mpc::Param p = floatParam(id, nm, 0.0f, 1.0f, 0.0f, "", 2);
-            p.automatable = false;   // 128 bars: keep them out of automation lanes
-            addParam(p);
+            display(floatParam(id, "", 0.0f, 1.0f, 0.0f, "", 2));
         }
 
         // ----- Appended after the display params (identity: never reorder) -----
@@ -448,9 +446,8 @@ public:
         // invisible copy of the real control. Written by the UI worker.
         for (int s = 0; s < kNumStreams; ++s)
         {
-            const std::string n = std::to_string(s + 1);
-            addParam(floatParam(("spdbar" + n).c_str(), ("~Speed bar " + n).c_str(), 0.0f, 1.0f,
-                                knobFromSpeed(defSpeed[s]) / 8.0f, "", 3));
+            display(floatParam(("spdbar" + std::to_string(s + 1)).c_str(), "", 0.0f, 1.0f,
+                               knobFromSpeed(defSpeed[s]) / 8.0f, "", 3));
         }
 
         if (numParams() != kNumParams) mpc::log("Hildegard: parameter count mismatch");
