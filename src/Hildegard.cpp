@@ -84,7 +84,8 @@ constexpr int kPos0      = kNumUser;            // 37..40
 constexpr int kStatus    = kPos0 + kNumStreams; // 41
 constexpr int kWave0     = kStatus + 1;         // 42..169
 constexpr int kWaveBars  = 128;
-constexpr int kNumParams = kWave0 + kWaveBars;  // 170
+constexpr int kSpeedScale = kWave0 + kWaveBars; // 170: Octaves / Ratios / Smooth (appended 2026-11-15)
+constexpr int kNumParams = kSpeedScale + 1;     // 171
 
 // Status choices (SPEC 5.3). Order is permanent: the skin's replacementStrings and the red
 // error label (choices 6-7) depend on it.
@@ -104,52 +105,65 @@ constexpr float kPlayOutMs    = 10.0f;     // stream fade-out when the transport
 
 // ---------------------------------------------------------------------------
 // Speed knob (SPEC Section 4). The stored parameter is a KNOB POSITION x in -8..8, not the
-// speed itself; speedFromKnob() turns it into the playback speed. The curve:
-//   - gives the slow end more room: |x| 0-1 -> 0-0.5x, 1-2 -> 0.5-1x, 2-4 -> 1-2x, 4-8 -> 2-8x
-//     (a straight -8..8 line squeezes 0..0.5x into 3% of the knob);
-//   - is FLAT for +-kSnapHalf around each landmark (0, +-0.5x, +-1x, +-2x): about 2% of the
-//     knob's travel each, so a Q-Link turn sits exactly on the landmark for a moment, then
-//     moves on. Being in the mapping, it works the same for touch, Q-Links, wheel and automation.
-// Changing these knots changes what saved projects sound like: treat them as permanent.
+// speed itself; speedFromKnob() turns it into the playback speed, in two steps:
+//   1. A smooth curve that gives the slow end more room:
+//      |x| 0-1 -> 0-0.5x, 1-2 -> 0.5-1x, 2-4 -> 1-2x, 4-8 -> 2-8x
+//      (a straight -8..8 line squeezes 0..0.5x into 3% of the knob).
+//   2. The global Speed Scale (param 170, on the RECORD tab) then snaps that speed:
+//      Octaves - to the nearest of 1/4, 1/2, 1, 2, 4, 8x (always in key with the take);
+//      Ratios  - to the nearest whole-number ratio 1/8 .. 8x (adds fifths, fourths, twelfths);
+//      Smooth  - no snapping (detune, tape-warble, experimental).
+//      Snapping is nearest-in-log (musical distance); below ~0.08x it holds (0x).
+// Being in the mapping, it works the same for touch, Q-Links, wheel and automation. The
+// sign of x is the direction. Changing the curve or the sets changes what saved projects
+// sound like: treat them as permanent once released.
 // ---------------------------------------------------------------------------
 constexpr int   kSpeedKnots = 5;
 constexpr float kSpeedKnobX[kSpeedKnots] = { 0.0f, 1.0f, 2.0f, 4.0f, 8.0f };
 constexpr float kSpeedValue[kSpeedKnots] = { 0.0f, 0.5f, 1.0f, 2.0f, 8.0f };
-constexpr float kSnapHalf = 0.16f;   // half-width of each plateau, in knob units (16 = full travel)
 
-inline float speedFromKnob(float x)
+enum SpeedScale { kScaleOctaves = 0, kScaleRatios, kScaleSmooth };
+constexpr float kOctaveSet[] = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f };
+constexpr float kRatioSet[]  = { 1.0f / 8, 1.0f / 4, 1.0f / 3, 1.0f / 2, 2.0f / 3, 1.0f,
+                                 3.0f / 2, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f };
+constexpr float kHoldBelow = 0.08f;   // snapped modes: slower than this = hold (0x)
+
+inline float smoothSpeed(float ax)    // step 1, |x| -> |speed|
 {
-    const float ax = std::fabs(x);
-    float v = kSpeedValue[kSpeedKnots - 1];
     for (int k = 0; k + 1 < kSpeedKnots; ++k)
-    {
-        if (ax > kSpeedKnobX[k + 1]) continue;
-        const float lo = kSpeedKnobX[k] + kSnapHalf;
-        const float hi = kSpeedKnobX[k + 1] - (k + 2 < kSpeedKnots ? kSnapHalf : 0.0f);   // no plateau at 8x
-        if (ax <= lo)      v = kSpeedValue[k];
-        else if (ax >= hi) v = kSpeedValue[k + 1];
-        else               v = kSpeedValue[k] + (kSpeedValue[k + 1] - kSpeedValue[k]) * (ax - lo) / (hi - lo);
-        break;
-    }
+        if (ax <= kSpeedKnobX[k + 1])
+            return kSpeedValue[k] + (kSpeedValue[k + 1] - kSpeedValue[k]) * (ax - kSpeedKnobX[k])
+                                    / (kSpeedKnobX[k + 1] - kSpeedKnobX[k]);
+    return kSpeedValue[kSpeedKnots - 1];
+}
+
+template <size_t N> inline float snapLog(float v, const float (&set)[N])
+{
+    float best = set[0], bestD = 1e9f;
+    for (float r : set) { const float d = v > r ? v / r : r / v; if (d < bestD) { bestD = d; best = r; } }
+    return best;
+}
+
+inline float speedFromKnob(float x, int scale)
+{
+    float v = smoothSpeed(std::fabs(x));
+    if (scale != kScaleSmooth)
+        v = v < kHoldBelow ? 0.0f : (scale == kScaleOctaves ? snapLog(v, kOctaveSet) : snapLog(v, kRatioSet));
     return x < 0.0f ? -v : v;
 }
 
-// Inverse, for defaults and presets: the knob position that gives `speed` (plateau centre for a landmark).
+// Inverse of the smooth curve, for defaults and presets: the knob position that gives `speed`.
 inline float knobFromSpeed(float speed)
 {
     const float av = std::fmin(std::fabs(speed), kSpeedValue[kSpeedKnots - 1]);
     float x = kSpeedKnobX[kSpeedKnots - 1];
-    for (int k = 0; k < kSpeedKnots; ++k)
-        if (av == kSpeedValue[k]) { x = kSpeedKnobX[k]; goto done; }
     for (int k = 0; k + 1 < kSpeedKnots; ++k)
-    {
-        if (av > kSpeedValue[k + 1]) continue;
-        const float lo = kSpeedKnobX[k] + kSnapHalf;
-        const float hi = kSpeedKnobX[k + 1] - (k + 2 < kSpeedKnots ? kSnapHalf : 0.0f);
-        x = lo + (hi - lo) * (av - kSpeedValue[k]) / (kSpeedValue[k + 1] - kSpeedValue[k]);
-        break;
-    }
-done:
+        if (av <= kSpeedValue[k + 1])
+        {
+            x = kSpeedKnobX[k] + (kSpeedKnobX[k + 1] - kSpeedKnobX[k]) * (av - kSpeedValue[k])
+                                 / (kSpeedValue[k + 1] - kSpeedValue[k]);
+            break;
+        }
     return speed < 0.0f ? -x : x;
 }
 
@@ -182,7 +196,8 @@ inline float sampleAt(const std::vector<float>& buf, int len, double pos)
 struct PlayHead
 {
     double pos = 0.0;
-    int    dir = 1;                         // +1 / -1 for ping-pong
+    int    dir = 1;                         // ping-pong leg: +1 / -1 (always +1 in Loop mode)
+    int    move = 1;                        // actual travel direction = dir * sign(speed)
     float  a = 0.0f, b = 0.0f, xf = 0.0f;   // loop region and loop crossfade length
     int    mode = 0;                        // 0 = Loop, 1 = Ping-pong
 };
@@ -197,7 +212,7 @@ inline void readHead(const PlayHead& h, const Chunk& c, int len, float& outL, fl
     float mR = sampleAt(c.R, len, hp);
     if (h.mode == 0 && xf > 1.0)
     {
-        if (h.dir > 0 && hp > b - xf)
+        if (h.move > 0 && hp > b - xf)
         {
             const float t = clamp((float)((hp - (b - xf)) / xf), 0.0f, 1.0f);
             const double wp = a + (hp - (b - xf));
@@ -205,7 +220,7 @@ inline void readHead(const PlayHead& h, const Chunk& c, int len, float& outL, fl
             mL = gM * mL + gW * sampleAt(c.L, len, wp);
             mR = gM * mR + gW * sampleAt(c.R, len, wp);
         }
-        else if (h.dir < 0 && hp < a + xf)
+        else if (h.move < 0 && hp < a + xf)
         {
             const float t = clamp((float)(((a + xf) - hp) / xf), 0.0f, 1.0f);
             const double wp = b - ((a + xf) - hp);
@@ -217,20 +232,24 @@ inline void readHead(const PlayHead& h, const Chunk& c, int len, float& outL, fl
     outL = mL; outR = mR;
 }
 
-// Advance and wrap. Loop wrapping accounts for the end->start overlap crossfade length.
+// Advance and wrap. The sign of `speed` is live: turning Speed through zero reverses the
+// head. Loop mode travels by the sign alone; ping-pong flips its leg (dir) at each end, and
+// a negative speed runs both legs backwards. Loop wrapping accounts for the crossfade length.
 inline void advanceHead(PlayHead& h, float speed, int len)
 {
-    h.pos += (double)std::fabs(speed) * h.dir;
+    if (h.mode == 0) h.dir = 1;
+    h.move = speed < 0.0f ? -h.dir : h.dir;
+    h.pos += (double)std::fabs(speed) * h.move;
     const double a = h.a, b = h.b, xf = h.xf;
     if (h.mode == 0)   // Loop
     {
-        if (h.dir > 0 && h.pos >= b)      h.pos = (a + xf) + (h.pos - b);
-        else if (h.dir < 0 && h.pos <= a) h.pos = (b - xf) - (a - h.pos);
+        if (h.move > 0 && h.pos >= b)      h.pos = (a + xf) + (h.pos - b);
+        else if (h.move < 0 && h.pos <= a) h.pos = (b - xf) - (a - h.pos);
     }
     else               // Ping-pong: reflect at the ends (position-continuous, low click)
     {
-        if (h.dir > 0 && h.pos >= b)      { h.pos = b - (h.pos - b); h.dir = -1; }
-        else if (h.dir < 0 && h.pos <= a) { h.pos = a + (a - h.pos); h.dir = +1; }
+        if (h.move > 0 && h.pos >= b)      { h.pos = b - (h.pos - b); h.dir = -h.dir; h.move = -1; }
+        else if (h.move < 0 && h.pos <= a) { h.pos = a + (a - h.pos); h.dir = -h.dir; h.move = +1; }
     }
     h.pos = clamp(h.pos, 0.0, (double)(len > 0 ? len - 1 : 0));
 }
@@ -369,6 +388,9 @@ public:
             addParam(p);
         }
 
+        // ----- Appended after the display params (identity: never reorder) -----
+        addParam(choiceParam("speedscale", "Speed Scale", {"Octaves", "Ratios", "Smooth"}, kScaleOctaves));
+
         if (numParams() != kNumParams) mpc::log("Hildegard: parameter count mismatch");
 
         addPresets();
@@ -454,17 +476,24 @@ public:
         if (playEdge) for (Stream& s : streams_) s.started = false;   // re-seek to in/out on start
 
         // ----- per-block setup (all transcendentals happen here, once) -----
+        // After a project/state load, a Record that was saved ON must not start a take (it would
+        // look like a fresh tap). Treat it as already pressed: no rising edge, so nothing
+        // starts; the parameter keeps its saved value (state round-trips exactly). The button
+        // shows lit-but-idle; one tap releases it, the next starts a take.
+        if (releaseButtonsAfterLoad_.exchange(false, std::memory_order_acq_rel))
+            recPrev_ = getBool(kRecord);
         handleRecordButton(tr);
         const int armStart = armedStartFrame(tr, playing, n);   // -1 = no bar line in this block
         handleSaveButton();
         { float gD, gW; equalPowerMix(get(kDryWet) * 0.01f, gD, gW); dryS_.setTarget(gD); wetS_.setTarget(gW); }
         const bool resample = getBool(kResample);
+        const int  scale = getInt(kSpeedScale);
 
         for (int s = 0; s < kNumStreams; ++s)
         {
             Stream& st = streams_[s];
             const int b = streamBase(s);
-            st.speedS.setTarget(speedFromKnob(get(b + oSpeed)));
+            st.speedS.setTarget(speedFromKnob(get(b + oSpeed), scale));
             st.volG.setTarget(volumeGain(get(b + oVolume)));
             float pl, pr; equalPowerPan(clamp(get(b + oPan) * 0.01f, -1.0f, 1.0f), pl, pr);
             st.panLG.setTarget(pl); st.panRG.setTarget(pr);
@@ -577,7 +606,7 @@ public:
         char buf[32];
         if (off == oSpeed)
         {
-            const float v = speedFromKnob(plain);
+            const float v = speedFromKnob(plain, getInt(kSpeedScale));
             std::snprintf(buf, sizeof(buf), "%.2fx", std::fabs(v) < 0.005f ? 0.0 : (double)v);
             out = buf;
             return true;
@@ -628,14 +657,14 @@ public:
     // swaps it in. Nothing here touches the buffers process() is using.
     void loadExtraState(const uint8_t* d, size_t n) override
     {
+        releaseButtonsAfterLoad_.store(true, std::memory_order_release);   // see below
         if (d == nullptr || n < 16 || std::memcmp(d, "HGC1", 4) != 0) return;
         auto u32 = [d](size_t at) { uint32_t v = 0; for (int i = 0; i < 4; ++i) v |= (uint32_t)d[at + i] << (8 * i); return v; };
         const uint32_t len = u32(12);
         if (u32(4) != 1 || len > (uint32_t)kMaxFrames || 16 + (size_t)len * 4 > n) return;
 
-        // A project saved mid-take must not reopen recording (Record would be a rising edge).
-        if (getBool(kRecord)) set(kRecord, 0.0f);
-        if (getBool(kSave))   set(kSave, 0.0f);
+        // A project saved mid-take must not reopen recording: process() disarms the Record edge
+        // (flag set at the top of this function, so it also covers a chunk without a take).
 
         // Claim the staging slot (wait if the audio thread is swapping a previous load in).
         for (;;)
@@ -877,6 +906,11 @@ private:
             computeWave();
             requestDisplayUpdate();
         }
+
+        // Speed Scale changed: the four Speed readouts now mean different speeds, but the MPC
+        // only redraws values the user touches. One page refresh redraws them.
+        const int scale = getInt(kSpeedScale);
+        if (scale != lastScale_) { lastScale_ = scale; requestDisplayUpdate(); }
     }
 
     // Peak of each 1/128 slice of the front chunk, normalised so the loudest slice is full height.
@@ -991,7 +1025,8 @@ private:
         if (!st.started)
         {
             st.ph.pos = speed >= 0.0f ? st.ph.a : st.ph.b;
-            st.ph.dir = speed >= 0.0f ? 1 : -1;
+            st.ph.dir  = 1;
+            st.ph.move = speed >= 0.0f ? 1 : -1;
             st.started = true;
         }
 
@@ -1035,7 +1070,7 @@ private:
     {
         Stream& st = streams_[s];
         const int b = streamBase(s);
-        st.speedS.snap(speedFromKnob(get(b + oSpeed)));
+        st.speedS.snap(speedFromKnob(get(b + oSpeed), getInt(kSpeedScale)));
         st.volG.snap(volumeGain(get(b + oVolume)));
         float pl, pr; equalPowerPan(clamp(get(b + oPan) * 0.01f, -1.0f, 1.0f), pl, pr);
         st.panLG.snap(pl); st.panRG.snap(pr);
@@ -1108,6 +1143,8 @@ private:
     // state restore.
     float    lastPos_[kNumStreams] = { 0.0f, 0.0f, 0.0f, 0.0f };
     float    lastStatus_ = (float)stPressRecord;
+    int      lastScale_ = kScaleOctaves;
+    std::atomic<bool> releaseButtonsAfterLoad_{false};   // set by loadExtraState, consumed in process()
     bool     haveFull_ = false, haveSaveResult_ = false, saveResultFailed_ = false;
     std::chrono::steady_clock::time_point fullAt_{}, saveResultAt_{};
 };

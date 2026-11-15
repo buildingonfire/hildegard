@@ -78,6 +78,8 @@ def sp(s, off):
 
 
 P_POS0, P_STATUS, P_WAVE0, N_WAVE = 37, 41, 42, 128
+P_SCALE = 170                     # Speed Scale, appended after the display params
+SCALE_CHOICES = ["Octaves", "Ratios", "Smooth"]
 STATUS_CHOICES = ["Press Record", "Ready", "Armed", "Recording", "Saving", "Saved", "Save failed", "Buffer full"]
 LENGTH_CHOICES = ["Free", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"]
 
@@ -96,12 +98,21 @@ NAME_Y, NAME_H = 206, 46
 SLOT_Y = [258, 348, 438, 528]
 SLOT_H = 84
 
+# Length tile: the choices as a 3 x 2 radio grid. The MenuOverlay draws an empty list on device.
+LEN_BW, LEN_BH = 88, 58
+LEN_BX = [12, 106, 200]      # inside the 300 x 196 tile
+LEN_BY = [58, 126]
+# Speed Scale tile (bottom right, where Status was): three stacked radio buttons.
+SCALE_BW, SCALE_BH = 276, 42
+SCALE_BY = [52, 100, 148]
+DRYWET_W = COL_X[3] - 13 - 20    # Dry/Wet fills the rest of the bottom row
+
 # Inside the band
 BAR_X0, BAR_X1 = 10.0, 1230.0
 BAR_W = 7
 BAR_TOP, BAR_MID, BAR_BOT = 12, 70, 128
-SPAN_Y = [140, 148, 156, 164]
-SPAN_H = 4
+SPAN_Y = [132, 142, 152, 162]
+SPAN_H = 8          # 4 px drew nothing on device (ColourBar outline/inset eats the fill)
 MARK_TOP = 6
 MARK_W = 4
 
@@ -230,6 +241,7 @@ def make_images():
     half = BAR_MID - BAR_TOP
     imgs["bar"] = solid_png("wave_bar.png", BAR_W, half, WAVE)
     imgs["bar_off"] = clear_png("wave_bar_off.png", BAR_W, half)
+    imgs["hit"] = clear_png("hit_clear.png", COL_W, NAME_H)   # invisible touch target over labels
 
     for s in range(4):
         h = SPAN_Y[s] + SPAN_H - MARK_TOP
@@ -300,6 +312,23 @@ def make_images():
     for icon in ("rec", "resample", "save"):
         imgs[icon + "_off"] = tile(False, icon).save("%s_off.png" % icon)
         imgs[icon + "_on"] = tile(True, icon).save("%s_on.png" % icon)
+
+    # Length choice buttons (3 x 2 grid inside the Length tile).
+    # Text stays white on both, so "on" = bright 3 px outline around a lighter fill.
+    c = Canvas(LEN_BW, LEN_BH)
+    c.rrect(0, 0, LEN_BW, LEN_BH, 6, TRACK)
+    imgs["len_off"] = c.save("length_off.png")
+    c = Canvas(LEN_BW, LEN_BH)
+    c.rrect(0, 0, LEN_BW, LEN_BH, 6, LIT)
+    c.rrect(3, 3, LEN_BW - 3, LEN_BH - 3, 4, (0x4A, 0x4A, 0x52))
+    imgs["len_on"] = c.save("length_on.png")
+    c = Canvas(SCALE_BW, SCALE_BH)
+    c.rrect(0, 0, SCALE_BW, SCALE_BH, 6, TRACK)
+    imgs["scale_off"] = c.save("scale_off.png")
+    c = Canvas(SCALE_BW, SCALE_BH)
+    c.rrect(0, 0, SCALE_BW, SCALE_BH, 6, LIT)
+    c.rrect(3, 3, SCALE_BW - 3, SCALE_BH - 3, 4, (0x4A, 0x4A, 0x52))
+    imgs["scale_on"] = c.save("scale_on.png")
     return imgs
 
 
@@ -426,10 +455,6 @@ def knob_overlay(polarity):
                                        ("polarityType", polarity), ("showMinusSign", True), ("handleName", "Data")])
 
 
-def menu_overlay():
-    return overlay_def("MenuOverlay", [1, ("withNumbers", False), ("handleName", "Data")])
-
-
 def muted(s):
     return ["IndexedEnabling/1/2/" + P(sp(s, O_MUTE))]
 
@@ -444,11 +469,11 @@ def active(s):
 def control_slot(s, bipolar, lit):
     """A stream control: value text (right) and a full-width bar. The caption is a tab-level label."""
     col = STREAM_RGB[s] if lit else STREAM_DIM[s]
-    txt = TEXT if lit else TEXT_DIMMER
+    txt = TEXT_DIM if lit else TEXT_DIMMER
     overlay = "knob overlay bi" if bipolar else "knob overlay"
     return component(
         [focus_ring(COL_W, SLOT_H, STREAM_RGB[s]),
-         entry("value", "Label", label("Value", text_style(24, txt, "right verticallyCentred")), rect(120, 6, 164, 34)),
+         entry("value", "Label", label("Value", text_style(20, txt, "right verticallyCentred")), rect(150, 6, 134, 34)),
          entry("bar", "Slider", colour_bar(argb(TRACK), argb(LINE), argb(col), bipolar), rect(16, 48, 268, 22))],
         actions=[action("Mouse Down", "Q-Link"),
                  action("Double Click", "Show Overlay", extra=overlay),
@@ -462,19 +487,17 @@ def mode_slot(s, lit, imgs):
     on_p = imgs[("pp_on" if lit else "pp_ondim") + k]
     off_l = imgs["loop_off" if lit else "loop_offdim"]
     off_p = imgs["pp_off" if lit else "pp_offdim"]
-    txt = TEXT if lit else TEXT_DIMMER
+    txt = TEXT_DIM if lit else TEXT_DIMMER
 
     def btn(on, off, bid):
         return {"version": 2, "onImage": on, "offImage": off, "buttonId": bid, "numButtonsInGroup": 2,
                 "handleName": "Data", "gestureBehaviour": "Instant"}
     return component(
         [focus_ring(COL_W, SLOT_H, STREAM_RGB[s]),
-         entry("value", "Label", label("Value", text_style(24, txt, "right verticallyCentred")), rect(120, 4, 164, 34)),
+         entry("value", "Label", label("Value", text_style(20, txt, "right verticallyCentred")), rect(150, 4, 134, 34)),
          entry("loop", "Button", btn(on_l, off_l, 0), rect(16, 42, 130, 36)),
          entry("pingpong", "Button", btn(on_p, off_p, 1), rect(154, 42, 130, 36))],
-        actions=[action("Mouse Down", "Q-Link"),
-                 action("Double Click", "Show Overlay", extra="menu overlay"),
-                 action("Enter Pressed", "Show Overlay", extra="menu overlay")],
+        actions=[action("Mouse Down", "Q-Link")],   # no menu: MenuOverlay draws empty on device
         background=argb(PANEL), focus_bg=argb(PANEL_FOCUS))
 
 
@@ -514,6 +537,10 @@ def wave_band(imgs):
             kids.append(entry("marker%d" % (s + 1), "Slider", thumb,
                               rect(BAR_X0 - MARK_W / 2.0, MARK_TOP, span_w + MARK_W, h),
                               show_if=active(s) if lit else muted(s)))
+    # Faint hint while there is no take yet (status 0 = "Press Record"); gone once a waveform exists.
+    kids.append(text_entry("hint", "Ready to record", rect(0, BAR_TOP, BAND_RECT[2], BAR_BOT - BAR_TOP),
+                           text_style(30, TEXT_DIMMER, "horizontallyCentred verticallyCentred", "SemiBold"),
+                           show_if=["IndexedEnabling/0/%d/%s" % (len(STATUS_CHOICES), P(P_STATUS))]))
     # Shield: last child, so it is on top and takes every touch on the band.
     kids.append(custom("touchShield", rect(0, 0, BAND_RECT[2], BAND_RECT[3])))
     return component(kids, background=argb(BAND))
@@ -522,7 +549,8 @@ def wave_band(imgs):
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
-CAPTION = lambda lit: text_style(20, TEXT_DIM if lit else TEXT_DIMMER, style="SemiBold", case="Upper Case")
+CAPTION = lambda lit: text_style(24, TEXT if lit else TEXT_DIMMER, style="SemiBold", case="Upper Case")
+CAP_DX = 44         # clears the "Q" badge the MPC draws in the Q-Link focus box's top-left corner
 
 
 def band_entry():
@@ -533,13 +561,17 @@ def stream_header(s, imgs):
     x = COL_X[s]
     btn = {"version": 2, "onImage": imgs["name_muted"], "offImage": imgs["name%d" % s], "buttonId": 1,
            "numButtonsInGroup": 1, "handleName": P(sp(s, O_MUTE)), "gestureBehaviour": "Instant"}
+    # The label covers the whole button and swallows touches (seen on device), so a
+    # transparent button bound to the same parameter goes on top to take the tap.
+    hit = dict(btn, onImage=imgs["hit"], offImage=imgs["hit"])
     r = rect(x, NAME_Y, COL_W, NAME_H)
     return [
-        entry("stream%d_mute" % (s + 1), "Button", btn, r, focus="Yes"),
+        entry("stream%d_mute" % (s + 1), "Button", btn, r),
         text_entry("stream%d_active" % (s + 1), "Stream %d - Active" % (s + 1), r,
                    text_style(22, DARK_TEXT, "horizontallyCentred verticallyCentred", "SemiBold"), show_if=active(s)),
         text_entry("stream%d_muted" % (s + 1), "Stream %d - Muted" % (s + 1), r,
                    text_style(22, TEXT, "horizontallyCentred verticallyCentred", "SemiBold"), show_if=muted(s)),
+        entry("stream%d_mute_hit" % (s + 1), "Button", hit, r, focus="Yes"),
     ]
 
 
@@ -552,7 +584,7 @@ def stream_slot(s, row, caption, param, kind):
         comp = ("mode_s%d" % (s + 1)) if kind == "mode" else ("ctrl_s%d_%s" % (s + 1, kind))
         comp += "" if lit else "_dim"
         out.append(custom(comp, rect(x, y, COL_W, SLOT_H), [("Data", P(param))], focus="Yes", invalid="Hide", show_if=vis))
-        out.append(text_entry("cap", caption, rect(x + 16, y + (4 if kind == "mode" else 6), 150, 34), CAPTION(lit), show_if=vis))
+        out.append(text_entry("cap", caption, rect(x + CAP_DX, y + (4 if kind == "mode" else 6), 130, 34), CAPTION(lit), show_if=vis))
     return out
 
 
@@ -585,48 +617,65 @@ def record_tab():
                "numButtonsInGroup": 1, "handleName": P(param), "gestureBehaviour": "Instant"}
         off, on = ["IndexedEnabling/0/2/" + P(param)], ["IndexedEnabling/1/2/" + P(param)]
         tr, sr = rect(x, TY + 118, 300, 36), rect(x, TY + 150, 300, 28)
-        return [entry(key, "Button", btn, rect(x, TY, 300, TH), focus="Yes"),
+        hit = dict(btn, onImage=IMGS["hit"], offImage=IMGS["hit"])   # labels swallow touches
+        return [entry(key, "Button", btn, rect(x, TY, 300, TH)),
                 text_entry(key + "_t0", title_off, tr, big(TEXT), show_if=off),
                 text_entry(key + "_t1", title_on, tr, big(DARK_TEXT), show_if=on),
                 text_entry(key + "_s0", sub_off, sr, small(TEXT_DIM), show_if=off),
-                text_entry(key + "_s1", sub_on, sr, small(DARK_TEXT), show_if=on)]
+                text_entry(key + "_s1", sub_on, sr, small(DARK_TEXT), show_if=on),
+                entry(key + "_hit", "Button", hit, rect(x, TY, 300, TH), focus="Yes")]
 
-    kids += toggle_tile(COL_X[0], P_RECORD, "rec", "Record", "Recording", "Tap to start", "Tap to stop")
-    kids += toggle_tile(COL_X[1], P_RESAMPLE, "resample", "Resample", "Resample", "Records the input", "Records the output")
+    def choice_grid(key, param, choices, cells, img_on, img_off):
+        """Radio buttons (buttonId = step) with a white label each, then a transparent radio button
+        over the label, because labels swallow touches. cells[i] = (x, y, w, h) on the tab."""
+        out = []
+        for i, (choice, cell) in enumerate(zip(choices, cells)):
+            r = rect(*cell)
+            radio = {"version": 2, "onImage": img_on, "offImage": img_off, "buttonId": i,
+                     "numButtonsInGroup": len(choices), "handleName": P(param), "gestureBehaviour": "Instant"}
+            out.append(entry("%s%d" % (key, i), "Button", radio, r))
+            out.append(text_entry("%s%d_txt" % (key, i), choice, r,
+                                  text_style(20, TEXT, "horizontallyCentred verticallyCentred", "SemiBold")))
+            out.append(entry("%s%d_hit" % (key, i), "Button", dict(radio, onImage=IMGS["hit"], offImage=IMGS["hit"]), r))
+        return out
+
+    kids += toggle_tile(COL_X[0], P_RECORD, "rec", "Record", "Recording", "Records the input", "Tap to stop")
+    kids += toggle_tile(COL_X[1], P_RESAMPLE, "resample", "Resample", "Resample",
+                        "Records the current loop", "Records the current loop")
     kids += toggle_tile(COL_X[2], P_SAVE, "save", "Save", "Save", "Bounce to Hildegard Loops", "Bounce to Hildegard Loops")
     kids.append(custom("lengthTile", rect(COL_X[3], TY, 300, TH), [("Data", P(P_LENGTH))], focus="Yes"))
+    kids += choice_grid("len", P_LENGTH, LENGTH_CHOICES,
+                        [(COL_X[3] + LEN_BX[i % 3], TY + LEN_BY[i // 3], LEN_BW, LEN_BH) for i in range(len(LENGTH_CHOICES))],
+                        IMGS["len_on"], IMGS["len_off"])
 
+    # Bottom row: Dry/Wet fills the space left of the Speed Scale tile (which replaced Status).
     RY, RH = 414, 198
-    kids.append(custom("dryWetTile", rect(20, RY, 613, RH), [("Data", P(P_DRYWET))], focus="Yes"))
-    kids.append(custom("panelTile", rect(646, RY, 614, RH)))
-    kids.append(text_entry("status_cap", "Status", rect(670, RY + 16, 300, 30), CAPTION(True)))
-    vr = rect(670, RY + 56, 566, 100)
-    status_ts = lambda rgb: text_style(52, rgb, "left verticallyCentred", "SemiBold")
-    kids.append(value_entry("status", P(P_STATUS), vr, status_ts(TEXT), show_if=["RangedEnabling/0/5/8/" + P(P_STATUS)]))
-    kids.append(value_entry("status_err", P(P_STATUS), vr, status_ts(ERROR), show_if=["RangedEnabling/6/7/8/" + P(P_STATUS)]))
+    kids.append(custom("dryWetTile", rect(20, RY, DRYWET_W, RH), [("Data", P(P_DRYWET))], focus="Yes"))
+    kids.append(custom("scaleTile", rect(COL_X[3], RY, 300, RH), [("Data", P(P_SCALE))], focus="Yes"))
+    kids += choice_grid("scale", P_SCALE, SCALE_CHOICES,
+                        [(COL_X[3] + 12, RY + SCALE_BY[i], SCALE_BW, SCALE_BH) for i in range(len(SCALE_CHOICES))],
+                        IMGS["scale_on"], IMGS["scale_off"])
     return tab("RECORD", 0, kids, [])
 
 
-def length_tile():
+def caption_tile(h, caption=None):
+    """A panel with a focus ring and a caption: the parameter's name, or fixed text."""
+    handle = fixed_text(caption) if caption else "Data"
     return component(
-        [focus_ring(300, 196, LIT),
-         entry("cap", "Label", label("Name", CAPTION(True)), rect(20, 16, 260, 30)),
-         entry("value", "Label", label("Value", text_style(46, TEXT, "horizontallyCentred verticallyCentred", "SemiBold")),
-               rect(10, 58, 280, 72)),
-         entry("hint", "Label", label("Name", text_style(18, TEXT_DIM, "horizontallyCentred verticallyCentred"),
-                                      fixed_text("Tap to choose")), rect(10, 150, 280, 28))],
-        actions=[action("Mouse Down", "Show Overlay", extra="menu overlay"),
-                 action("Enter Pressed", "Show Overlay", extra="menu overlay")],
+        [focus_ring(300, h, LIT),
+         entry("cap", "Label", label("Name", CAPTION(True), handle), rect(20, 14, 260, 30))],
+        actions=[action("Mouse Down", "Q-Link")],
         background=argb(PANEL), focus_bg=argb(PANEL_FOCUS))
 
 
 def dry_wet_tile():
+    w = DRYWET_W
     return component(
-        [focus_ring(613, 198, LIT),
+        [focus_ring(w, 198, LIT),
          entry("cap", "Label", label("Name", CAPTION(True)), rect(24, 16, 300, 30)),
          entry("value", "Label", label("Value", text_style(44, TEXT, "right verticallyCentred", "SemiBold")),
-               rect(300, 40, 289, 56)),
-         entry("bar", "Slider", colour_bar(argb(TRACK), argb(LINE), argb(NEUTRAL_BAR), False), rect(24, 116, 565, 44))],
+               rect(w - 313, 40, 289, 56)),
+         entry("bar", "Slider", colour_bar(argb(TRACK), argb(LINE), argb(NEUTRAL_BAR), False), rect(24, 116, w - 48, 44))],
         actions=[action("Mouse Down", "Q-Link"),
                  action("Double Click", "Show Overlay", extra="knob overlay"),
                  action("Enter Pressed", "Show Overlay", extra="knob overlay")],
@@ -639,11 +688,10 @@ def dry_wet_tile():
 def tui():
     defs = [("knob overlay", knob_overlay("Unipolar")),
             ("knob overlay bi", knob_overlay("Bipolar")),
-            ("menu overlay", menu_overlay()),
             ("touchShield", component([])),
-            ("panelTile", component([], background=argb(PANEL), ignore_mouse=True)),
             ("waveBand", wave_band(IMGS)),
-            ("lengthTile", length_tile()),
+            ("lengthTile", caption_tile(196)),
+            ("scaleTile", caption_tile(198, "Speed")),
             ("dryWetTile", dry_wet_tile())]
     for s in range(4):
         for lit in (True, False):
@@ -657,6 +705,7 @@ def tui():
     for s in range(4):
         repl += [(sp(s, O_MODE), ["Loop", "Ping-pong"]), (sp(s, O_MUTE), ["Active", "Muted"])]
     repl.append((P_STATUS, STATUS_CHOICES))
+    repl.append((P_SCALE, SCALE_CHOICES))
 
     # Loop: In, Out, Mode, Speed.  Mix: Tone, Pan, Volume, (empty).  docs/UI-LAYOUT.md
     loop_rows = [("In", O_IN, "uni"), ("Out", O_OUT, "uni"), ("Mode", O_MODE, "mode"), ("Speed", O_SPEED, "bi")]
@@ -684,7 +733,8 @@ def qlinks(loop_rows, mix_rows):
         return grid({(r, s): sp(s, spec[1]) for s in range(4) for r, spec in enumerate(rows) if spec})
 
     mapping = [
-        {"Tab": 1, "SubTab": 1, "Bank Direction": "Column", "Q-Links": grid({(0, 0): P_DRYWET, (1, 0): P_LENGTH})},
+        {"Tab": 1, "SubTab": 1, "Bank Direction": "Column",
+         "Q-Links": grid({(0, 0): P_DRYWET, (1, 0): P_LENGTH, (2, 0): P_SCALE})},
         {"Tab": 2, "SubTab": 1, "Bank Direction": "Column", "Q-Links": stream_grid(loop_rows)},
         {"Tab": 3, "SubTab": 1, "Bank Direction": "Column", "Q-Links": stream_grid(mix_rows)},
     ]

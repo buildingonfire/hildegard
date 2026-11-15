@@ -228,13 +228,26 @@ int main(int argc, char** argv)
     };
     // knob x in -8..8 -> norm = (x + 8) / 16
     auto nx = [](double x) { return (float)((x + 8.0) / 16.0); };
-    check("speed: knob centre = 0.00x",            speedText(nx(0.0))  == "0.00x");
-    check("speed: plateau around 0 (x=0.12)",      speedText(nx(0.12)) == "0.00x");
-    check("speed: plateau at 0.5x (x=0.9)",        speedText(nx(0.9))  == "0.50x");
-    check("speed: plateau at 1x (x=2.1)",          speedText(nx(2.1))  == "1.00x");
-    check("speed: plateau at -2x (x=-4.1)",        speedText(nx(-4.1)) == "-2.00x");
-    check("speed: between landmarks moves (x=3)",  speedText(nx(3.0))  == "1.50x");
-    check("speed: full right = 8.00x",             speedText(1.0f)     == "8.00x");
+    // Speed Scale (param 170): Octaves = 0, Ratios = 0.5, Smooth = 1 (normalised choice index).
+    const int kScale = 170;
+    e->setParameter(e, kScale, 0.0f);   // Octaves (default)
+    check("octaves: knob centre = 0.00x",            speedText(nx(0.0))  == "0.00x");
+    check("octaves: very slow holds (x=0.1)",        speedText(nx(0.1))  == "0.00x");
+    check("octaves: x=0.5 -> 0.25x",                 speedText(nx(0.5))  == "0.25x");
+    check("octaves: x=2.1 -> 1.00x",                 speedText(nx(2.1))  == "1.00x");
+    check("octaves: x=3 (1.5x smooth) -> 2.00x",     speedText(nx(3.0))  == "2.00x");
+    check("octaves: x=-4.1 -> -2.00x",               speedText(nx(-4.1)) == "-2.00x");
+    check("octaves: full right = 8.00x",             speedText(1.0f)     == "8.00x");
+    e->setParameter(e, kScale, 0.5f);   // Ratios
+    check("ratios: x=3 -> 1.50x",                    speedText(nx(3.0))  == "1.50x");
+    check("ratios: x=1.4 (0.7x smooth) -> 0.67x",    speedText(nx(1.4))  == "0.67x");
+    check("ratios: x=5 (3.5x smooth) -> 4.00x",      speedText(nx(5.0))  == "4.00x");
+    check("ratios: x=-1.5 (0.75x smooth) -> -0.67x", speedText(nx(-1.5)) == "-0.67x");
+    e->setParameter(e, kScale, 1.0f);   // Smooth
+    check("smooth: x=2.1 -> 1.05x (no snapping)",    speedText(nx(2.1))  == "1.05x");
+    check("smooth: x=0.1 -> 0.05x",                  speedText(nx(0.1))  == "0.05x");
+    check("smooth: x=3 -> 1.50x",                    speedText(nx(3.0))  == "1.50x");
+    e->setParameter(e, kScale, 0.0f);   // back to Octaves for the tests below
     {
         // default of a fresh instance: Speed 1 = 1x, Speed 3 = -1x
         AEffect* e2 = entry(&hostCb);
@@ -366,6 +379,31 @@ int main(int argc, char** argv)
         // a 220 Hz sine at <= ~0.4 peak moves at most ~0.013 per sample; a click would be >> that
         std::printf("  swap: largest sample-to-sample step after the swap = %.4f\n", maxJump);
         check("swap: old->new chunk crossfade has no click", maxJump < 0.05);
+    }
+
+    // Live speed sign (device bug 2026-11-15): turning Speed negative WHILE playing must reverse
+    // the head. Watch stream 1's displayed position (param 37) move forward, then backward.
+    {
+        g_playing = true;
+        for (int s = 0; s < 4; ++s) e->setParameter(e, muteIdx(s), s == 0 ? 0.0f : 1.0f);
+        auto stepsUp = [&](float speedNorm) {     // count forward vs backward moves of pos1
+            e->setParameter(e, 5, speedNorm);
+            int up = 0, down = 0;
+            for (int b = 0; b < 30; ++b) { for (int i = 0; i < kBlock; ++i) inL[i] = inR[i] = 0.0f; e->processReplacing(e, ins, outs, kBlock); }
+            float prev = e->getParameter(e, 37);
+            for (int k = 0; k < 12; ++k) {
+                for (int b = 0; b < 2; ++b) { for (int i = 0; i < kBlock; ++i) inL[i] = inR[i] = 0.0f; e->processReplacing(e, ins, outs, kBlock); g_pos += kBlock; }
+                std::this_thread::sleep_for(std::chrono::milliseconds(60));   // let the UI worker publish
+                const float p = e->getParameter(e, 37);
+                if (p > prev + 1e-4f) ++up; else if (p < prev - 1e-4f) ++down;
+                prev = p;
+            }
+            return up - down;
+        };
+        const int fwd = stepsUp(nx(2.1));          // +1x
+        const int rev = stepsUp(nx(-2.1));         // -1x, changed while playing
+        std::printf("  speed sign: +1x net steps %d, -1x net steps %d\n", fwd, rev);
+        check("speed: turning Speed negative while playing reverses the head", fwd > 4 && rev < -4);
     }
 
     std::printf("  other checks: %s\n", otherFails == 0 ? "ALL PASS" : "FAILURES");

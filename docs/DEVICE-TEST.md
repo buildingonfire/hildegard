@@ -70,7 +70,9 @@ or program track's insert.
       waveform redraws.
 - [ ] A 30 s take saves and reloads without a noticeable stall (~5 MB of state). If the
       MPC chokes on that size, fall back to a shorter cap or a sidecar WAV.
-- [ ] A project saved while Record was on reopens **not** recording.
+- [ ] A project saved while Record was on reopens **not** recording. Record may show lit
+      but idle: one tap releases it, the next tap starts a take. (It keeps its saved value
+      so the state round-trips exactly; only the "rising edge" is disarmed after a load.)
 
 ## 8. Presets
 
