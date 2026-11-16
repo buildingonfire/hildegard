@@ -40,8 +40,8 @@ Each column: a full-width **name button** (~42px, taps to toggle `sN_mute`), the
 
 | Column slot | **F2 Loop** | **F3 Mix** |
 |---|---|---|
-| 1 | In (`sN_in`) | Tone (`sN_tone`) |
-| 2 | Out (`sN_out`) | Pan (`sN_pan`) |
+| 1 | Start (`sN_start`, was In) | Tone (`sN_tone`) |
+| 2 | Length (`sN_length`, was Out) | Pan (`sN_pan`) |
 | 3 | Mode (`sN_mode`) | Volume (`sN_volume`) |
 | 4 | **Speed** (`sN_speed`) | *(empty)* |
 
@@ -53,13 +53,15 @@ Each column: a full-width **name button** (~42px, taps to toggle `sN_mute`), the
 
 - Each control: name (left), value text (right), horizontal bar filled in the stream's colour.
 - **Bipolar fill** (grows from centre): **Tone, Pan, Speed** (0 / C / 0× is the centre).
-- **Unipolar fill** (from the left): **Volume, In, Out, Dry/Wet**.
+- **Unipolar fill** (from the left): **Volume, Start, Length, Dry/Wet**.
 - **Muted column**: dim everything except the name button; dim that stream's waveform span + marker.
 
 ## Q-Links (SPEC §6, updated)
 
 Bank direction = column; each column's four Q-Links map top→bottom to its four controls:
-- **Loop tab**: In, Out, Mode, Speed
+- **Loop tab**: Start, Length, Mode, Speed
+- **Record tab (2026-11-16)**: Fixed Loop Length is gone; the Playback Speed Ratios tile
+  fills the whole right column (three tall buttons, each with a one-line description).
 - **Mix tab**: Tone, Pan, Volume, (empty)
 
 Supply `qlinkBoundsData` per column; the MPC draws its own focus box (Hildegard draws none).

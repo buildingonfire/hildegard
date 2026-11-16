@@ -1,7 +1,8 @@
 // _verify/render.cpp - offline driver for the parts of Hildegard the host simulator can't script.
 //
 // NOT part of the plugin. This mini-host loads the built native DLL and drives it like the
-// MPC would: record a take, play, stop, resume, Save; bar-synced recording; the speed-knob
+// MPC would: record a take, play, stop, resume, Save; loops on a circle (Start + Length,
+// wrapping, seam, Start sweeps); the speed-knob
 // curve (via the display text); presets; project state save/load; a reset mid-take; and the
 // old->new chunk crossfade on a swap. Each check prints PASS/FAIL; the exit code is non-zero
 // on any FAIL. It also writes a WAV of the first playback for listening.
@@ -17,6 +18,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <functional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -160,60 +162,126 @@ int main(int argc, char** argv)
     std::printf("  item 3 (stop silences): %s\n", peakOf(tailL, tailR) < 0.01 ? "PASS" : "FAIL");
     std::printf("  item 2 (loop survives stop/resume): %s\n", peakOf(rL, rR) > 0.05 ? "PASS" : "FAIL");
 
-    // --- bar-synced recording (Length = N bars). 120 bpm 4/4: one bar = 2 s = 88200 frames. ---
-    // Position only advances while playing, like a real transport.
-    const int kLength = 3;
-    const double kBar = 88200.0;
-    auto runTo = [&](double target) {           // process blocks until g_pos >= target
-        while (g_pos < target) {
-            g_blockPos = g_pos;
-            for (int i = 0; i < kBlock; ++i) { inL[i] = 0.3f; inR[i] = 0.3f; }
-            e->processReplacing(e, ins, outs, kBlock);
-            if (g_playing) g_pos += kBlock;
-            else { static int idle = 0; if (++idle > 200) { idle = 0; break; } }
-        }
-    };
-    auto endBlockOk = [&](double expectEnd) {   // the take ends inside the block holding expectEnd-1
-        return g_recordOffAt >= 0.0 && g_recordOffAt <= expectEnd - 1 && expectEnd - 1 < g_recordOffAt + kBlock;
-    };
+    // --- Loops on a circle (Start + Length, 2026-11-16). Fixed Loop Length (param 3) is
+    // retired, so a stored "1 bar" must not arm: Record starts at once. Then wrapped loops,
+    // the take's seam, Start sweeps and Length changes must not click or gap, and the span
+    // display params must describe the loop. (Replaces the bar-sync tests.)
+    const int kLength = 3;   // retired slot, still present
     int barFails = 0;
-    auto report = [&](const char* what, bool ok) { std::printf("  bar-sync: %-52s %s\n", what, ok ? "PASS" : "FAIL"); if (!ok) ++barFails; };
+    auto report = [&](const char* what, bool ok) { std::printf("  loops: %-62s %s\n", what, ok ? "PASS" : "FAIL"); if (!ok) ++barFails; };
+    auto startIdx = [](int s) { return 5 + s * 8 + 4; };
+    auto lenIdx   = [](int s) { return 5 + s * 8 + 5; };
+    auto modeIdx  = [](int s) { return 5 + s * 8 + 6; };
+    auto speedIdx = [](int s) { return 5 + s * 8 + 0; };
+    const int kSpan0 = 175;
+    {
+        disp(effMainsChanged, 0, 0); disp(effMainsChanged, 0, 1);
+        g_playing = true;
+        e->setParameter(e, kRecord, 0.0f);
+        e->setParameter(e, kLength, 0.2f);            // a stored "1 bar" from an old project
+        runBlock(true, nullptr, nullptr);
+        g_recordOffAt = -1.0;
+        e->setParameter(e, kRecord, 1.0f);            // must record at once (Free)
+        const int takeBlocks = (int)(1.0 * kSR / kBlock);
+        for (int b = 0; b < takeBlocks; ++b) runBlock(true, nullptr, nullptr);
+        const bool noAutoOff = g_recordOffAt < 0.0;   // a 1-bar take would have ended by itself
+        e->setParameter(e, kRecord, 0.0f);
+        runBlock(true, nullptr, nullptr);
+        report("retired Fixed Loop Length: no arm, take runs until tapped off", noAutoOff);
 
-    disp(effMainsChanged, 0, 0); disp(effMainsChanged, 0, 1);
-    e->setParameter(e, kRecord, 0.0f);
-    e->setParameter(e, kLength, 0.2f);            // choice 1 of 0..5 = "1 bar"
-    g_playing = true;
+        // Only stream 1, 1x, full wet. Speed knob x = 2 (1x) -> norm 0.25.
+        e->setParameter(e, kDryWet, 1.0f);
+        for (int s = 0; s < 4; ++s) e->setParameter(e, muteIdx(s), s == 0 ? 0.0f : 1.0f);
+        e->setParameter(e, speedIdx(0), 0.25f);
 
-    // A) arm mid-bar while playing -> starts at the next bar line, ends 1 bar later.
-    g_pos = 4.0 * kBar + 30000.0;                 // 30000 frames into bar 5
-    g_recordOffAt = -1.0;
-    runTo(g_pos + kBlock);
-    e->setParameter(e, kRecord, 1.0f);            // arm
-    runTo(7.0 * kBar);
-    report("arm mid-bar: ends 1 bar after the next bar line", endBlockOk(6.0 * kBar));
+        // Render with silent input; return the worst second difference (click size) and the
+        // quietest 10 ms window (gap) after the first 50 ms.
+        auto probe = [&](double seconds, const std::function<void(int)>& perBlock, double& click, double& gap) {
+            std::vector<float> L, R;
+            const int nb = (int)(seconds * kSR / kBlock);
+            for (int b = 0; b < nb; ++b) { if (perBlock) perBlock(b); runBlock(false, &L, &R); }
+            click = 0.0; gap = 1e9;
+            for (size_t i = (size_t)(0.05 * kSR); i < L.size(); ++i)
+                click = std::fmax(click, std::fabs((double)L[i] - 2.0 * L[i - 1] + L[i - 2]));
+            const size_t win = (size_t)(0.010 * kSR);
+            for (size_t i = (size_t)(0.05 * kSR); i + win <= L.size(); i += win / 2) {
+                double ss = 0; for (size_t k = i; k < i + win; ++k) ss += (double)L[k] * L[k];
+                gap = std::fmin(gap, std::sqrt(ss / win));
+            }
+        };
+        // A 330 Hz sine at 0.6 has a second difference of ~0.0013 per sample (times the
+        // stream's gain); a hard jump gives 0.05+. RMS should stay well above 0.05.
+        const double kClick = 0.02, kGap = 0.05;
+        double c = 0, g = 0;
+        auto setLoop = [&](double startPct, double lenPct, int mode) {
+            e->setParameter(e, startIdx(0), (float)(startPct / 100.0));
+            e->setParameter(e, lenIdx(0), (float)(lenPct / 100.0));
+            e->setParameter(e, modeIdx(0), mode * 0.5f);
+        };
+        char what[160];
+        const struct { double st, ln; int mode; const char* name; } cases[] = {
+            { 0, 100, 0, "full take, Forward" },
+            { 80, 40, 0, "wrapped (80% + 40%), Forward" },
+            { 50, 100, 0, "full length from 50% (crosses the seam)" },
+            { 90, 30, 1, "wrapped, Reverse" },
+            { 10, 30, 2, "Ping-pong, not wrapped (reference: turnarounds kink)" },
+            { 22, 31, 2, "Ping-pong, not wrapped (reference 2)" },
+            { 47, 29, 2, "Ping-pong, not wrapped (reference 3)" },
+            { 85, 30, 2, "wrapped, Ping-pong" },
+            { 95, 10, 0, "short loop over the seam" },
+        };
+        for (const auto& k : cases) {
+            setLoop(k.st, k.ln, k.mode);
+            disp(effMainsChanged, 0, 0); disp(effMainsChanged, 0, 1);   // restart the heads
+            probe(3.0, nullptr, c, g);
+            // Ping-pong turnarounds reflect the waveform: a slope kink, not a jump (about twice
+            // the sine's slope). Wrapped Ping-pong must be no worse than unwrapped.
+            static double ppRef = 0.0;
+            if (k.mode == 2 && k.st < 50) ppRef = std::fmax(ppRef, c);
+            const double lim = k.mode == 2 ? std::fmax(kClick, 1.2 * ppRef) : kClick;
+            std::snprintf(what, sizeof(what), "%s: no click (%.4f)", k.name, c); report(what, c < lim);
+            std::snprintf(what, sizeof(what), "%s: no gap (min RMS %.3f)", k.name, g); report(what, g > kGap);
+        }
 
-    // B) arm then cancel before the bar line -> nothing records, Record never auto-releases.
-    g_pos = 8.0 * kBar + 10000.0;
-    g_recordOffAt = -1.0;
-    e->setParameter(e, kRecord, 1.0f);            // arm
-    runTo(g_pos + 20000.0);
-    e->setParameter(e, kRecord, 0.0f);            // cancel
-    runTo(11.0 * kBar);
-    report("arm then cancel: no take", g_recordOffAt < 0.0);
+        // Turning Start while playing: a new value every block. A long loop (60%) swept over
+        // 20% must not disturb the sound at all (the head stays put); a short loop (25%) swept
+        // over the whole take keeps leaving the head behind, so it jumps (crossfaded): no clicks.
+        setLoop(0, 60, 0);
+        disp(effMainsChanged, 0, 0); disp(effMainsChanged, 0, 1);
+        probe(4.0, [&](int b) { const double ph = std::fmod(b / 86.0, 2.0); e->setParameter(e, startIdx(0), (float)(0.2 * (ph < 1 ? ph : 2 - ph))); }, c, g);
+        std::snprintf(what, sizeof(what), "Start swept 0-20%% under a 60%% loop: no click (%.4f)", c); report(what, c < kClick);
+        std::snprintf(what, sizeof(what), "Start swept 0-20%% under a 60%% loop: no gap (min RMS %.3f)", g); report(what, g > kGap);
+        setLoop(0, 25, 0);
+        disp(effMainsChanged, 0, 0); disp(effMainsChanged, 0, 1);
+        probe(4.0, [&](int b) { const double ph = std::fmod(b / 86.0, 2.0); e->setParameter(e, startIdx(0), (float)(ph < 1 ? ph : 2 - ph)); }, c, g);
+        std::snprintf(what, sizeof(what), "Start swept 0-100%% under a 25%% loop: no click (%.4f)", c); report(what, c < kClick);
+        std::printf("  loops: (info) that sweep's quietest 10 ms: RMS %.3f (crossfaded jumps between phases of a pure sine can partly cancel)\n", g);
 
-    // C) arm with the transport stopped -> waits; Play from bar 1 starts at once; 2 bars.
-    e->setParameter(e, kLength, 0.4f);            // choice 2 = "2 bars"
-    g_playing = false; g_pos = 0.0;
-    g_recordOffAt = -1.0;
-    e->setParameter(e, kRecord, 1.0f);            // arm while stopped
-    runTo(1e9);                                   // stopped: runs 200 idle blocks then returns
-    const bool waited = g_recordOffAt < 0.0;
-    g_playing = true;
-    runTo(3.0 * kBar);
-    report("armed while stopped waits for Play", waited);
-    report("Play from bar 1: 2-bar take ends at bar 3", endBlockOk(2.0 * kBar));
+        // Length shrinking under the head (wraps its phase) and growing again.
+        setLoop(10, 80, 0);
+        disp(effMainsChanged, 0, 0); disp(effMainsChanged, 0, 1);
+        probe(4.0, [&](int b) { if (b % 40 == 20) e->setParameter(e, lenIdx(0), (b / 40) % 2 ? 0.8f : 0.05f); }, c, g);
+        std::snprintf(what, sizeof(what), "Length jumps 80%% <-> 5%%: no click (%.4f)", c); report(what, c < kClick);
 
-    std::printf("  bar-sync: %s\n", barFails == 0 ? "ALL PASS" : "FAILURES");
+        // Span display params for stream 1: Start 80%, Length 40% -> start .8, endA 1, endB .2, end .2.
+        setLoop(80, 40, 0);
+        std::this_thread::sleep_for(std::chrono::milliseconds(150));   // the UI worker runs at 25 Hz
+        auto approxEq = [](float a, float b) { return std::fabs(a - b) < 0.002f; };
+        const float st = e->getParameter(e, kSpan0 + 0), ea = e->getParameter(e, kSpan0 + 1),
+                    eb = e->getParameter(e, kSpan0 + 2), ep = e->getParameter(e, kSpan0 + 3);
+        std::snprintf(what, sizeof(what), "span params (wrapped): %.3f %.3f %.3f %.3f", st, ea, eb, ep);
+        report(what, approxEq(st, 0.8f) && approxEq(ea, 1.0f) && approxEq(eb, 0.2f) && approxEq(ep, 0.2f));
+        setLoop(10, 50, 2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+        report("span params (plain): end = start + length",
+               approxEq(e->getParameter(e, kSpan0 + 0), 0.1f) && approxEq(e->getParameter(e, kSpan0 + 1), 0.6f) &&
+               approxEq(e->getParameter(e, kSpan0 + 2), 0.0f) && approxEq(e->getParameter(e, kSpan0 + 3), 0.6f));
+
+        setLoop(0, 100, 0);   // back to defaults for the tests below
+        e->setParameter(e, kLength, 0.0f);
+        for (int s = 0; s < 4; ++s) e->setParameter(e, muteIdx(s), 0.0f);
+    }
+    std::printf("  loops: %s\n", barFails == 0 ? "ALL PASS" : "FAILURES");
 
     // ---------------------------------------------------------------------------------
     // Speed knob mapping (SPEC 4): read the display text the MPC would show.

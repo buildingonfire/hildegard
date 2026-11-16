@@ -77,7 +77,8 @@ namespace {
 // Dry/Wet is parameter 0 because the MPC nudges parameter 0 on every prepare (host contract
 // step 7); Length used to be there (moved 2026-11-15, before any release).
 enum Global { kDryWet = 0, kRecord, kResample, kLength, kSave, kNumGlobal };
-enum StreamOff { oSpeed = 0, oTone, oPan, oVolume, oIn, oOut, oMode, oMute, kPerStream };
+// oStart/oLength were In/Out until 2026-11-16 (same slots, new ids; nothing released yet).
+enum StreamOff { oSpeed = 0, oTone, oPan, oVolume, oStart, oLength, oMode, oMute, kPerStream };
 enum StreamMode { kModeForward = 0, kModeReverse, kModePingPong };   // per-stream Mode choices
 
 constexpr int kNumStreams = 4;
@@ -90,7 +91,14 @@ constexpr int kWave0     = kStatus + 1;         // 42..169
 constexpr int kWaveBars  = 128;
 constexpr int kSpeedScale = kWave0 + kWaveBars; // 170: Octaves / Ratios / Smooth (appended 2026-11-15)
 constexpr int kSpeedBar0 = kSpeedScale + 1;     // 171..174: snapped Speed bar position (display)
-constexpr int kNumParams = kSpeedBar0 + 4;      // 175
+constexpr int kSpan0     = kSpeedBar0 + 4;      // 175..194: loop span drawing, 5 per stream (display)
+enum SpanOff { spStart = 0, spEndA, spEndB, spEndPos, spChevron, kPerSpan };
+constexpr int kNumParams = kSpan0 + kNumStreams * kPerSpan;   // 195
+
+// Span ends: small fixed-size brackets that rise above each loop span at its start and end
+// (like a DAW's loop brackets), drawn by the skin from spStart / spEndPos alone. The spChevron
+// slot once carried a width level (brackets as long as the crossfade); it is unused now but
+// stays so later indices do not move.
 
 // Status choices (SPEC 5.3). Order is permanent: the skin's replacementStrings and the red
 // error label (choices 6-7) depend on it.
@@ -105,6 +113,8 @@ constexpr int   kMaxFrames    = 1323000;   // 30 s * 44100
 constexpr float kMinRegionMs  = 10.0f;     // shortest loop region
 constexpr float kLoopXfadePct = 0.10f;     // loop end->start crossfade = 10% of the region (SPEC)
 constexpr float kMinXfadeMs   = 2.0f;      // but never shorter than this
+constexpr float kSeamMs       = 20.0f;     // crossfade where the take's end meets its start
+constexpr float kJumpFadeMs   = 20.0f;     // crossfade when moving Start makes the head jump
 constexpr float kRecFadeMs    = 5.0f;      // fade in/out on the recorded chunk edges
 constexpr float kSwapFadeMs   = 20.0f;     // wet fade-in after a buffer swap
 constexpr float kPlayInMs     = 5.0f;      // stream fade-in when the transport starts
@@ -210,50 +220,111 @@ struct Chunk
     void alloc() { L.assign(kMaxFrames, 0.0f); R.assign(kMaxFrames, 0.0f); }
 };
 
-inline float sampleAt(const std::vector<float>& buf, int len, double pos)
+// ---------------------------------------------------------------------------
+// Loops on a circle (2026-11-16: Start + Length replaced In + Out). The take is treated as a
+// circle, so a loop may run past the take's end and continue from its start. Where the take's
+// end meets its start there is usually a jump in the audio, so the circle is built with a
+// short seam crossfade: of a take of `len` frames, the circle is circ = len - seam frames,
+// circle position v reads take frame v + seam, and the circle's last `seam` frames blend the
+// take's tail (fading out) with its first `seam` frames (fading in). The circle is therefore
+// seamless everywhere. (It is `seam` frames shorter than the take: inaudible drift, and
+// Hildegard is harmonic-first, so loop timing is not tempo-exact anyway.)
+// ---------------------------------------------------------------------------
+
+// One sample of the circle at integer position k (0 <= k < circ).
+inline void circleTap(const Chunk& c, int circ, int seam, int k, float& l, float& r)
 {
-    if (len <= 0) return 0.0f;
-    const int i = (int)std::floor(pos);
-    const float frac = (float)(pos - i);
-    auto at = [&](int k) { return buf[(size_t)clamp(k, 0, len - 1)]; };
-    return hermite(at(i - 1), at(i), at(i + 1), at(i + 2), frac);
+    const int i = k + seam;
+    if (k < circ - seam) { l = c.L[(size_t)i]; r = c.R[(size_t)i]; return; }
+    const float t = ((float)(k - (circ - seam)) + 0.5f) / (float)seam;   // 0..1 across the seam
+    const float gOut = std::sqrt(1.0f - t), gIn = std::sqrt(t);
+    const int   j = k - (circ - seam);                                    // the take's head
+    l = gOut * c.L[(size_t)i] + gIn * c.L[(size_t)j];
+    r = gOut * c.R[(size_t)i] + gIn * c.R[(size_t)j];
 }
 
-// Where a playhead is and the loop it runs in (frames of one chunk).
+// Hermite-interpolated stereo read at circle position v (0 <= v < circ).
+inline void readCircle(const Chunk& c, int circ, int seam, double v, float& outL, float& outR)
+{
+    if (circ <= 0) { outL = outR = 0.0f; return; }
+    const int   i = (int)std::floor(v);
+    const float frac = (float)(v - i);
+    if (i >= 1 && i + 2 < circ - seam)   // fast path: four plain neighbours in the take
+    {
+        const size_t k = (size_t)(i + seam);
+        outL = hermite(c.L[k - 1], c.L[k], c.L[k + 1], c.L[k + 2], frac);
+        outR = hermite(c.R[k - 1], c.R[k], c.R[k + 1], c.R[k + 2], frac);
+        return;
+    }
+    float l[4], r[4];                    // near the circle's ends: wrap each neighbour
+    for (int t = 0; t < 4; ++t)
+    {
+        int k = i - 1 + t;
+        while (k < 0) k += circ;
+        while (k >= circ) k -= circ;
+        circleTap(c, circ, seam, k, l[t], r[t]);
+    }
+    outL = hermite(l[0], l[1], l[2], l[3], frac);
+    outR = hermite(r[0], r[1], r[2], r[3], frac);
+}
+
+// Where a playhead is and the loop it runs in. `pos` is the PHASE within the loop
+// (0..b frames, a is always 0); the loop starts at circle position `start`.
 struct PlayHead
 {
     double pos = 0.0;
     int    dir = 1;                         // ping-pong leg: +1 / -1
     int    move = 1;                        // actual travel direction this frame
-    float  a = 0.0f, b = 0.0f, xf = 0.0f;   // loop region and loop crossfade length
+    float  a = 0.0f, b = 0.0f, xf = 0.0f;   // loop (phase 0..b) and loop crossfade length
     int    mode = kModeForward;             // Forward / Reverse / Ping-pong
+    double start = 0.0;                     // loop start on the circle
+    int    circ = 0, seam = 0;              // the circle of the chunk this head reads
 };
+
+// Circle position of a phase.
+inline double circlePos(const PlayHead& h, double phase)
+{
+    if (h.circ <= 0) return 0.0;
+    double v = h.start + phase;
+    while (v >= h.circ) v -= h.circ;
+    while (v < 0.0) v += h.circ;
+    return v;
+}
+
+inline void readPhase(const PlayHead& h, const Chunk& c, double phase, float& l, float& r)
+{
+    readCircle(c, h.circ, h.seam, circlePos(h, phase), l, r);
+}
 
 // Read one stereo sample. In Forward/Reverse, the last `xf` frames before the wrap point are
 // equal-power crossfaded with the other end, so the loop point is seamless (~10% of the
 // loop runtime). sqrt() is a cheap hardware op and only runs inside the fade zone.
-inline void readHead(const PlayHead& h, const Chunk& c, int len, float& outL, float& outR)
+inline void readHead(const PlayHead& h, const Chunk& c, float& outL, float& outR)
 {
     const double hp = h.pos, a = h.a, b = h.b, xf = h.xf;
-    float mL = sampleAt(c.L, len, hp);
-    float mR = sampleAt(c.R, len, hp);
+    float mL, mR;
+    readPhase(h, c, hp, mL, mR);
     if (h.mode != kModePingPong && xf > 1.0)
     {
+        double wp = -1.0;
+        float t = 0.0f;
         if (h.move > 0 && hp > b - xf)
         {
-            const float t = clamp((float)((hp - (b - xf)) / xf), 0.0f, 1.0f);
-            const double wp = a + (hp - (b - xf));
-            const float gM = std::sqrt(1.0f - t), gW = std::sqrt(t);
-            mL = gM * mL + gW * sampleAt(c.L, len, wp);
-            mR = gM * mR + gW * sampleAt(c.R, len, wp);
+            t = clamp((float)((hp - (b - xf)) / xf), 0.0f, 1.0f);
+            wp = a + (hp - (b - xf));
         }
         else if (h.move < 0 && hp < a + xf)
         {
-            const float t = clamp((float)(((a + xf) - hp) / xf), 0.0f, 1.0f);
-            const double wp = b - ((a + xf) - hp);
+            t = clamp((float)(((a + xf) - hp) / xf), 0.0f, 1.0f);
+            wp = b - ((a + xf) - hp);
+        }
+        if (wp >= 0.0)
+        {
+            float wL, wR;
+            readPhase(h, c, wp, wL, wR);
             const float gM = std::sqrt(1.0f - t), gW = std::sqrt(t);
-            mL = gM * mL + gW * sampleAt(c.L, len, wp);
-            mR = gM * mR + gW * sampleAt(c.R, len, wp);
+            mL = gM * mL + gW * wL;
+            mR = gM * mR + gW * wR;
         }
     }
     outL = mL; outR = mR;
@@ -262,7 +333,7 @@ inline void readHead(const PlayHead& h, const Chunk& c, int len, float& outL, fl
 // Advance and wrap. Speed is unipolar (>= 0); direction comes from Mode alone (2026-11-15:
 // a bipolar speed plus ping-pong made "turn right" sometimes mean slower). Switching between
 // Forward and Reverse turns the head around in place. Wrapping accounts for the crossfade.
-inline void advanceHead(PlayHead& h, float speed, int len)
+inline void advanceHead(PlayHead& h, float speed)
 {
     if (h.mode == kModeForward)      h.dir = +1;
     else if (h.mode == kModeReverse) h.dir = -1;
@@ -279,10 +350,10 @@ inline void advanceHead(PlayHead& h, float speed, int len)
         if (h.move > 0 && h.pos >= b)      { h.pos = b - (h.pos - b); h.dir = -h.dir; h.move = -1; }
         else if (h.move < 0 && h.pos <= a) { h.pos = a + (a - h.pos); h.dir = -h.dir; h.move = +1; }
     }
-    h.pos = clamp(h.pos, 0.0, (double)(len > 0 ? len - 1 : 0));
+    h.pos = clamp(h.pos, 0.0, (double)b);
 }
 
-// Where to DRAW the playhead marker (frames). In Forward/Reverse the audio wraps to a + xf,
+// Where to DRAW the playhead marker (as a phase). In Forward/Reverse the audio wraps to a + xf,
 // because the loop's first xf frames were already heard inside the end crossfade; drawing the
 // raw position made the marker reappear ~10% into the loop. Instead, inside the crossfade the
 // marker runs at double speed: it reaches the loop end at the fade's midpoint (where both sides
@@ -312,6 +383,11 @@ struct Stream
     PlayHead ph;                // the playhead on the current (front) chunk
     PlayHead ghost;             // the old playhead on the previous chunk, alive ~20 ms after a swap
     bool     started = false;
+    // When Start or Length moves the loop out from under the head, the head jumps into it.
+    // The head as it was keeps playing as `jump` and fades out over jumpTotal frames while
+    // the moved head fades in. Further region changes wait until the fade is done.
+    PlayHead jump;
+    int      jumpLeft = 0, jumpTotal = 882;
 
     Smoother speedS;            // speed value (frames/frame)
     Smoother volG, panLG, panRG, muteG;   // smoothed gains
@@ -336,10 +412,11 @@ struct Stream
         volG.setTime(50.0f, sr);
         muteG.setTime(10.0f, sr);
         toneL.setSampleRate(sr); toneR.setSampleRate(sr);
+        jumpTotal = std::max(1, (int)msToSamples(kJumpFadeMs, sr));
     }
     void reset()
     {
-        ph = PlayHead(); ghost = PlayHead(); started = false;
+        ph = PlayHead(); ghost = PlayHead(); jump = PlayHead(); started = false; jumpLeft = 0;
         toneL.reset(); toneR.reset();
     }
     // Once per block: smooth Tone (~30 ms), then set the filter. Two tan()s per stream per block.
@@ -423,7 +500,10 @@ public:
         addParam(floatParam ("drywet",   "Dry/Wet",  0.0f, 100.0f, 50.0f, "%", 0));
         addParam(boolParam  ("record",   "Record",   false));
         addParam(boolParam  ("resample", "Resample", false));
-        addParam(choiceParam("length",   "Fixed Loop Length", {"Off", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"}, 0));
+        // Slot 3 was Fixed Loop Length (bar-synced recording), retired 2026-11-16: Hildegard is
+        // harmonic-first. Kept as a hidden, unread parameter so later indices do not move.
+        { mpc::Param p = choiceParam("length", "", {"Off", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"}, 0);
+          p.automatable = false; addParam(p); }
         addParam(boolParam  ("save",     "Save",     false));
 
         // ----- Per stream (5-36) -----
@@ -441,8 +521,9 @@ public:
             addParam(floatParam (("s" + n + "_tone").c_str(),   ("Tone " + n).c_str(),   -100.0f, 100.0f, 0.0f, "", 0));
             addParam(floatParam (("s" + n + "_pan").c_str(),    ("Pan " + n).c_str(),    -100.0f, 100.0f, defPan[s], "", 0));
             addParam(floatParam (("s" + n + "_volume").c_str(), ("Volume " + n).c_str(), 0.0f, 100.0f, defVol[s], "%", 0));
-            addParam(floatParam (("s" + n + "_in").c_str(),     ("In " + n).c_str(),     0.0f, 100.0f, 0.0f, "%", 0));
-            addParam(floatParam (("s" + n + "_out").c_str(),    ("Out " + n).c_str(),    0.0f, 100.0f, 100.0f, "%", 0));
+            // Loop = Start + Length, % of the take; a loop may wrap past the take's end.
+            addParam(floatParam (("s" + n + "_start").c_str(),  ("Start " + n).c_str(),  0.0f, 100.0f, 0.0f, "%", 0));
+            addParam(floatParam (("s" + n + "_length").c_str(), ("Length " + n).c_str(), 0.0f, 100.0f, 100.0f, "%", 0));
             addParam(choiceParam(("s" + n + "_mode").c_str(),   ("Mode " + n).c_str(),   {"Forward", "Reverse", "Ping-pong"}, defMode[s]));
             addParam(boolParam  (("s" + n + "_mute").c_str(),   ("Mute " + n).c_str(),   defMute[s]));
         }
@@ -473,6 +554,21 @@ public:
         {
             display(floatParam(("spdbar" + std::to_string(s + 1)).c_str(), "", 0.0f, 1.0f,
                                knobFromSpeed(defSpeed[s]) / 8.0f, "", 3));
+        }
+
+        // Display: how to draw each stream's loop span (fractions of the waveform width) and
+        // its chevrons. A loop that wraps is drawn as two pieces: start..1 and 0..endB.
+        {
+            const std::vector<std::string> levels = { "0", "1" };
+            for (int s = 0; s < kNumStreams; ++s)
+            {
+                const std::string n = std::to_string(s + 1);
+                display(floatParam(("spanstart" + n).c_str(), "", 0.0f, 1.0f, 0.0f, "", 3));
+                display(floatParam(("spanenda" + n).c_str(),  "", 0.0f, 1.0f, 1.0f, "", 3));
+                display(floatParam(("spanendb" + n).c_str(),  "", 0.0f, 1.0f, 0.0f, "", 3));
+                display(floatParam(("spanend" + n).c_str(),   "", 0.0f, 1.0f, 1.0f, "", 3));
+                display(choiceParam(("chevron" + n).c_str(),  "", levels, 0));   // unused
+            }
         }
 
         if (numParams() != kNumParams) mpc::log("Hildegard: parameter count mismatch");
@@ -676,8 +772,13 @@ public:
         // Publish state for the UI worker (lock-free; it turns these into display params).
         const int flenNow = chunk_[front_].length;
         for (int s = 0; s < kNumStreams; ++s)
-            posOut_[s].store(flenNow > 1 ? (float)(displayPos(streams_[s].ph) / (double)(flenNow - 1)) : 0.0f,
+        {
+            // Marker: the drawn phase, on the circle, in take frames (circle v = take v + seam).
+            const PlayHead& h = streams_[s].ph;
+            const double v = circlePos(h, displayPos(h)) + h.seam;
+            posOut_[s].store(flenNow > 1 ? (float)clamp(v / (double)(flenNow - 1), 0.0, 1.0) : 0.0f,
                              std::memory_order_relaxed);
+        }
         hasChunkOut_.store(flenNow > 0, std::memory_order_relaxed);
         recordingOut_.store(recording_, std::memory_order_relaxed);
         armedOut_.store(armed_, std::memory_order_relaxed);
@@ -774,7 +875,7 @@ public:
 private:
     // ----- Built-in presets (docs/presets.md). Values are plain, in parameter order. -----
     // Presets set Length to Free and leave Record/Save off; they never touch the recorded chunk.
-    struct StreamPreset { float speed, tone, pan, vol, in, out; int mode; bool mute; };
+    struct StreamPreset { float speed, tone, pan, vol, start, length; int mode; bool mute; };
     void addPreset(const char* name, float dryWet, const StreamPreset (&s)[kNumStreams])
     {
         std::vector<float> v = { dryWet, 0.0f /*record*/, 0.0f /*resample*/, 0.0f /*length Off*/, 0.0f /*save*/ };
@@ -783,7 +884,7 @@ private:
             // The table below is written the readable way: a signed speed and mode 0 = loop,
             // 1 = ping-pong. A negative loop speed is Reverse at that speed.
             const int mode = p.mode == 1 ? kModePingPong : (p.speed < 0.0f ? kModeReverse : kModeForward);
-            const float sv[kPerStream] = { knobFromSpeed(std::fabs(p.speed)), p.tone, p.pan, p.vol, p.in, p.out,
+            const float sv[kPerStream] = { knobFromSpeed(std::fabs(p.speed)), p.tone, p.pan, p.vol, p.start, p.length,
                                            (float)mode, p.mute ? 1.0f : 0.0f };
             v.insert(v.end(), sv, sv + kPerStream);
         }
@@ -792,7 +893,7 @@ private:
 
     void addPresets()
     {
-        //                         speed  tone   pan  vol   in    out   mode  mute
+        //                         speed  tone   pan  vol  start length mode  mute
         addPreset("Init", 50.0f, {{ 1.0f,    0,    0,  80,   0,  100,    0, false },
                                   { 0.5f,    0,  -30,  65,   0,  100,    0, true  },
                                   {-1.0f,    0,   30,  60,   0,  100,    0, true  },
@@ -810,11 +911,11 @@ private:
                                         {-1.0f,    0,   30,  60,   0,  100,    0, true  },
                                         { 2.0f,    0,    0,  50,   0,  100,    0, true  }});
         addPreset("Stutter Grid", 70.0f, {{ 1.0f,    0,  -60,  70,   0, 12.5f, 0, false },
-                                          { 1.0f,   20,  -20,  65,  25, 31.25f, 0, false },
-                                          {-1.0f,  -20,   20,  65,  50, 56.25f, 0, false },
-                                          { 2.0f,   30,   60,  45,  75, 87.5f, 0, false }});
-        addPreset("Ping-Pong Tape", 50.0f, {{ 1.0f,    0,  -50,  70,  10,   60,    1, false },
-                                            { 0.5f,  -30,   50,  65,  30,   80,    1, false },
+                                          { 1.0f,   20,  -20,  65,  25, 6.25f,  0, false },
+                                          {-1.0f,  -20,   20,  65,  50, 6.25f,  0, false },
+                                          { 2.0f,   30,   60,  45,  75, 12.5f, 0, false }});
+        addPreset("Ping-Pong Tape", 50.0f, {{ 1.0f,    0,  -50,  70,  10,   50,    1, false },
+                                            { 0.5f,  -30,   50,  65,  30,   50,    1, false },
                                             {-1.0f,  -15,    0,  55,   0,   50,    1, false },
                                             { 2.0f,   15,    0,  40,  50,  100,    1, true  }});
         addPreset("Tape Chorus", 40.0f, {{ 1.0f,     0,    0,  70,   0,  100,    0, false },
@@ -863,7 +964,9 @@ private:
             if (rising && !busy)
             {
                 takeBtn_ = k;                          // 0 = Record (input), 1 = Resample (output)
-                const int bars = kBars[clamp(getInt(kLength), 0, 5)];
+                // Fixed Loop Length is retired (slot 3 is hidden), so every take is Free. The
+                // bar-sync path below is kept for a future "start on the downbeat" option.
+                const int bars = 0; (void)kBars;
                 if (bars == 0 || !barSyncAvailable(tr)) { recording_ = true; recLen_ = 0; recTarget_ = kMaxFrames; }
                 else                                    { armed_ = true; armBars_ = bars; }
                 *prev[k] = true;
@@ -994,8 +1097,31 @@ private:
         notifyHostParameterChanged(index);
     }
 
+    // Span drawing from Start/Length. Uses the parameters,
+    // not the engine, so the span shows before the first take too. The circle's seam makes
+    // the engine's 100% a hair shorter than the take: well under a pixel for normal takes.
+    void publishSpans()
+    {
+        for (int s = 0; s < kNumStreams; ++s)
+        {
+            const int base = streamBase(s), d = kSpan0 + s * kPerSpan;
+            float st = clamp(get(base + oStart) * 0.01f, 0.0f, 1.0f);
+            if (st >= 1.0f) st = 0.0f;
+            const float ln  = clamp(get(base + oLength) * 0.01f, 0.001f, 1.0f);
+            const float end = st + ln;
+            const bool  wraps = end > 1.0f;
+            const float endA = wraps ? 1.0f : end, endB = wraps ? end - 1.0f : 0.0f;
+            publish(d + spStart,   st,   0.0005f, lastSpan_[s][spStart]);
+            publish(d + spEndA,    endA, 0.0005f, lastSpan_[s][spEndA]);
+            publish(d + spEndB,    endB, 0.0005f, lastSpan_[s][spEndB]);
+            publish(d + spEndPos,  wraps ? endB : endA, 0.0005f, lastSpan_[s][spEndPos]);
+        }
+    }
+
     void updateDisplay(std::chrono::steady_clock::time_point now)
     {
+        publishSpans();
+
         // Head positions (0-1 across the whole chunk). ~1/1000 of the chunk is far below a pixel.
         for (int s = 0; s < kNumStreams; ++s)
             publish(kPos0 + s, posOut_[s].load(std::memory_order_relaxed), 0.0008f, lastPos_[s]);
@@ -1116,24 +1242,53 @@ private:
         return p;
     }
 
-    // Loop region of every stream in frames of the current chunk (min length enforced).
-    // Cheap arithmetic only; runs once per block and again right after a mid-block swap.
+    // Loop of every stream on the current chunk's circle: Start and Length are % of the circle,
+    // and a loop may wrap past its end (see "Loops on a circle"). Moving the loop leaves the
+    // head where it is unless the loop no longer contains it (then a crossfaded jump, see
+    // Stream::jump). Cheap arithmetic only; runs once per block and again right after a
+    // mid-block swap.
     void updateRegions(int flen)
     {
-        const float minLen = msToSamples(kMinRegionMs, sampleRate_);
+        const int   seamLen = (int)msToSamples(kSeamMs, sampleRate_);
+        const int   seam = flen >= 8 * seamLen ? seamLen : 0;   // very short takes: plain circle
+        const int   circ = std::max(0, flen - seam);
+        const float minLen = std::min((float)circ, msToSamples(kMinRegionMs, sampleRate_));
         const float minXf  = msToSamples(kMinXfadeMs, sampleRate_);
         for (int s = 0; s < kNumStreams; ++s)
         {
-            PlayHead& h = streams_[s].ph;
-            const int b = streamBase(s);
-            float a  = get(b + oIn)  * 0.01f * (float)(flen - 1);
-            float bb = get(b + oOut) * 0.01f * (float)(flen - 1);
-            if (a > bb) std::swap(a, bb);
-            if (bb - a < minLen) bb = clamp(a + minLen, 0.0f, (float)(flen > 0 ? flen - 1 : 0));
-            h.a = a; h.b = bb;
-            const float region = bb - a;
-            h.xf = clamp(kLoopXfadePct * region, minXf, 0.5f * region);
-            h.mode = getInt(b + oMode);
+            Stream& st = streams_[s];
+            PlayHead& h = st.ph;
+            const int base = streamBase(s);
+            h.mode = getInt(base + oMode);
+            if (st.started && st.jumpLeft > 0 && h.circ == circ) continue;   // finish the fade first
+
+            double start = clamp(get(base + oStart) * 0.01, 0.0, 1.0) * circ;
+            if (start >= circ) start = 0.0;                                  // 100% = the start again
+            const float len = clamp(get(base + oLength) * 0.01f * (float)circ, minLen, (float)circ);
+            if (st.started && h.circ == circ && h.start == start && h.b == len) continue;
+
+            const PlayHead before = h;
+            h.start = start; h.circ = circ; h.seam = seam;
+            h.a = 0.0f; h.b = len;
+            h.xf = len > 0.0f ? clamp(kLoopXfadePct * len, std::min(minXf, 0.5f * len), 0.5f * len) : 0.0f;
+            if (!st.started || before.circ != circ) continue;               // (re)starts: no jump
+
+            // The head stays where it is on the take (no jump, so turning Start or Length while
+            // a drone plays is smooth): only the loop's ends move. If the loop moved out from
+            // under the head, it jumps to the loop's start (its end, going backwards), with a
+            // crossfade from where it was.
+            double ph = circlePos(before, before.pos) - start;
+            while (ph < 0.0) ph += circ;
+            while (ph >= circ) ph -= circ;
+            // Inside the loop crossfade the head also reads the loop's other end, which moved:
+            // that would click, so a change there is crossfaded too (same position, new blend).
+            auto inFade = [](const PlayHead& p) {
+                if (p.mode == kModePingPong || p.xf <= 1.0f) return false;
+                return p.move > 0 ? p.pos > p.b - p.xf : p.pos < p.a + p.xf;
+            };
+            const bool outside = ph > len;
+            h.pos = outside ? (h.move < 0 ? (double)len : 0.0) : ph;
+            if (outside || inFade(before) || inFade(h)) { st.jump = before; st.jumpLeft = st.jumpTotal; }
         }
     }
 
@@ -1150,24 +1305,36 @@ private:
 
         if (!st.started)
         {
-            const bool rev = st.ph.mode == kModeReverse;   // Reverse starts at the out point
+            const bool rev = st.ph.mode == kModeReverse;   // Reverse starts at the loop's end
             st.ph.pos  = rev ? st.ph.b : st.ph.a;
             st.ph.dir  = st.ph.move = rev ? -1 : 1;
             st.started = true;
+            st.jumpLeft = 0;
         }
 
         // Speed near zero holds the head and fades the stream to silence (no clicks/DC).
         const float speedGain = clamp(std::fabs(speed) / 0.02f, 0.0f, 1.0f);
 
         float sL, sR;
-        readHead(st.ph, front, flen, sL, sR);
+        readHead(st.ph, front, sL, sR);
+        if (st.jumpLeft > 0)   // Start moved: the head as it was fades out, the moved one in
+        {
+            float jL, jR;
+            readHead(st.jump, front, jL, jR);
+            const float t = 1.0f - (float)st.jumpLeft / (float)st.jumpTotal;
+            const float gIn = std::sqrt(t), gOut = std::sqrt(1.0f - t);
+            sL = gIn * sL + gOut * jL;
+            sR = gIn * sR + gOut * jR;
+            if (advance) advanceHead(st.jump, speed);
+            --st.jumpLeft;
+        }
         if (ghostLen > 0)   // just after a swap: old chunk out, new chunk in
         {
             float oL, oR;
-            readHead(st.ghost, ghostChunk, ghostLen, oL, oR);
+            readHead(st.ghost, ghostChunk, oL, oR);
             sL = gNew * sL + gOld * oL;
             sR = gNew * sR + gOld * oR;
-            if (advance) advanceHead(st.ghost, speed, ghostLen);
+            if (advance) advanceHead(st.ghost, speed);
         }
         else if (gNew < 1.0f) { sL *= gNew; sR *= gNew; }   // first take: just fade in
 
@@ -1185,7 +1352,7 @@ private:
         wetR += sR * g * pgr;
 
         if (!advance) return;   // transport stopped: hold the head in place
-        advanceHead(st.ph, speed, flen);
+        advanceHead(st.ph, speed);
     }
 
     static void equalPowerMix(float mix, float& gDry, float& gWet)
@@ -1273,7 +1440,9 @@ private:
     float    lastPos_[kNumStreams] = { 0.0f, 0.0f, 0.0f, 0.0f };
     float    lastStatus_ = (float)stPressRecord;
     int      lastScale_ = kScaleOctaves;
-    float    lastSpdBar_[kNumStreams] = { -1.0f, -1.0f, -1.0f, -1.0f };   // -1: publish on the first tick
+    float    lastSpdBar_[kNumStreams] = { -1.0f, -1.0f, -1.0f, -1.0f };
+    float    lastSpan_[kNumStreams][kPerSpan] = { { -1, -1, -1, -1, -1 }, { -1, -1, -1, -1, -1 },
+                                                  { -1, -1, -1, -1, -1 }, { -1, -1, -1, -1, -1 } };   // -1: publish on the first tick   // -1: publish on the first tick
     std::atomic<bool> releaseButtonsAfterLoad_{false};   // set by loadExtraState, consumed in process()
     bool     haveFull_ = false, haveSaveResult_ = false, saveResultFailed_ = false;
     std::chrono::steady_clock::time_point fullAt_{}, saveResultAt_{};

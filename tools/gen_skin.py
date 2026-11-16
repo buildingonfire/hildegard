@@ -14,9 +14,11 @@ Design notes
 - Three tabs: F1 RECORD (landing), F2 LOOP, F3 MIX. The waveform band (one custom component,
   "waveBand") sits at the top of every tab.
 - Waveform: 128 bars, each drawn twice (a Meter growing up from the centre line and one
-  growing down) bound to wave000-127. Loop spans are two stacked ColourBars per stream: one
-  filled 0..Out in the stream colour, then one filled 0..In in the band colour, which masks the
-  part before In. Head markers are TrackAndThumb sliders bound to pos1-4 with no track.
+  growing down) bound to wave000-127. Loop spans (Start + Length, wrapping past the take's
+  end) come from display params 175-194: piece A coloured 0..endA, masked 0..start in the band
+  colour, then piece B 0..endB. Small stream-coloured brackets stand on each span's start
+  and end, like a DAW's loop brackets. Head markers are TrackAndThumb sliders bound to
+  pos1-4 with no track.
   A transparent "shield" component on top swallows touches so nothing in the band is editable.
 - Muted streams: every stream-coloured element exists twice, a lit and a dim copy, and
   IndexedEnabling on Mute N shows exactly one of them.
@@ -69,8 +71,8 @@ CLEAR = "00000000"
 # ---------------------------------------------------------------------------
 # Parameter indices (SPEC 5; must match src/Hildegard.cpp)
 # ---------------------------------------------------------------------------
-P_DRYWET, P_RECORD, P_RESAMPLE, P_LENGTH, P_SAVE = 0, 1, 2, 3, 4   # Dry/Wet is 0 (host nudges param 0)
-O_SPEED, O_TONE, O_PAN, O_VOLUME, O_IN, O_OUT, O_MODE, O_MUTE = range(8)
+P_DRYWET, P_RECORD, P_RESAMPLE, P_SAVE = 0, 1, 2, 4   # Dry/Wet is 0 (host nudges param 0); 3 = retired Fixed Loop Length
+O_SPEED, O_TONE, O_PAN, O_VOLUME, O_START, O_LENGTH, O_MODE, O_MUTE = range(8)   # Start/Length were In/Out
 
 
 def sp(s, off):
@@ -84,7 +86,14 @@ P_SPDBAR0 = 171                   # 171-174: snapped Speed bar positions (displa
 SNAPPED = ["RangedEnabling/0/1/3/Parameter 170"]       # Speed Ratios = Octaves or Ratios
 SMOOTH = ["IndexedEnabling/2/3/Parameter 170"]
 STATUS_CHOICES = ["Press Record", "Ready", "Armed", "Recording", "Saving", "Saved", "Save failed", "Buffer full"]
-LENGTH_CHOICES = ["Off", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"]
+# Span drawing (display, 5 per stream; src/Hildegard.cpp kSpan0 / SpanOff / kChev*).
+P_SPAN0, SPAN_PER = 175, 5
+SP_START, SP_ENDA, SP_ENDB, SP_ENDPOS, SP_CHEV = range(5)
+CHEV_W = 6          # span-end bracket width in px (SP_CHEV is unused since 2026-11-16)
+
+
+def span_p(s, off):
+    return P_SPAN0 + s * SPAN_PER + off
 
 
 def P(i):
@@ -101,16 +110,15 @@ NAME_Y, NAME_H = 206, 46
 SLOT_Y = [258, 348, 438, 528]
 SLOT_H = 84
 
-# Length tile: the choices as a 3 x 2 radio grid. The MenuOverlay draws an empty list on device.
-LEN_BW, LEN_BH = 88, 58
-LEN_BX = [12, 106, 200]      # inside the 300 x 196 tile
-LEN_BY = [58, 126]
 # Mode slot: three buttons across the 268 px inner width.
 MODE_BW = 84
 MODE_BX = [16, 108, 200]
-# Speed Scale tile (bottom right, where Status was): three stacked radio buttons.
-SCALE_BW, SCALE_BH = 276, 42
-SCALE_BY = [52, 100, 148]
+# Speed Ratios tile: the whole right column of RECORD (Fixed Loop Length was above it until
+# 2026-11-16). Three tall radio buttons, each with its name and a one-line description.
+SCALE_TILE_H = 406
+SCALE_BW, SCALE_BH = 276, 104
+SCALE_BY = [56, 172, 288]
+SCALE_DESC = ["1/4, 1/2, 1, 2, 4x", "Adds fifths: 1/3, 2/3, 3/2, 3x", "Any speed, no snapping"]
 DRYWET_W = COL_X[3] - 13 - 20    # Dry/Wet fills the rest of the bottom row
 
 # Inside the band
@@ -119,6 +127,9 @@ BAR_W = 7
 BAR_TOP, BAR_MID, BAR_BOT = 12, 70, 128
 SPAN_Y = [132, 142, 152, 162]
 SPAN_H = 8          # 4 px drew nothing on device (ColourBar outline/inset eats the fill)
+SPAN_INSET = 2      # measured on device: a ColourBar fills x+2 .. x+2+v*(w-4), rows 2..5 of 8
+CHEV_RISE = 10      # chevrons stand this many px above the span's visible top row
+CHEV_H = CHEV_RISE + 1   # image height: the rise plus 1 row overlapping the span (no gap)
 MARK_TOP = 6
 MARK_W = 4
 
@@ -317,25 +328,28 @@ def make_images():
             c.line(icx - 26, icy + 10, icx - 26, icy + 24, 5, fg)
             c.line(icx + 26, icy + 10, icx + 26, icy + 24, 5, fg)
             c.line(icx - 26, icy + 24, icx + 26, icy + 24, 5, fg)
-        elif icon == "busy":              # ellipsis: Save while it captures and writes
-            for dx in (-22, 0, 22):
-                c.circle(icx + dx, icy, 6, fg)
         return c
 
     for icon in ("rec", "resample", "save"):
         imgs[icon + "_off"] = tile(False, icon).save("%s_off.png" % icon)
         imgs[icon + "_on"] = tile(True, icon).save("%s_on.png" % icon)
-    imgs["save_busy"] = tile(False, "busy").save("save_busy.png")
 
     # Length choice buttons (3 x 2 grid inside the Length tile).
     # Text stays white on both, so "on" = bright 3 px outline around a lighter fill.
-    c = Canvas(LEN_BW, LEN_BH)
-    c.rrect(0, 0, LEN_BW, LEN_BH, 6, TRACK)
-    imgs["len_off"] = c.save("length_off.png")
-    c = Canvas(LEN_BW, LEN_BH)
-    c.rrect(0, 0, LEN_BW, LEN_BH, 6, LIT)
-    c.rrect(3, 3, LEN_BW - 3, LEN_BH - 3, 4, (0x4A, 0x4A, 0x52))
-    imgs["len_on"] = c.save("length_on.png")
+    # Span-end brackets: a right triangle standing CHEV_RISE px above the span, tall at the
+    # loop's outer edge, sloping down inwards. One per stream, lit and dim.
+    w = CHEV_W
+    for s in range(4):
+        for lit in (True, False):
+            col = STREAM_RGB[s] if lit else STREAM_DIM[s]
+            for end in (False, True):
+                c = Canvas(w, CHEV_H)
+                if end:   # tall at x = w (the loop's end), sloping down to the left
+                    c.tri((w, 0), (w, CHEV_H), (0, CHEV_H), col)
+                else:     # tall at x = 0 (the loop's start), sloping down to the right
+                    c.tri((0, 0), (0, CHEV_H), (w, CHEV_H), col)
+                name = "chev_s%d_%s_%s.png" % (s + 1, "lit" if lit else "dim", "end" if end else "start")
+                imgs["chev%d%s%s" % (s, "L" if lit else "D", "e" if end else "s")] = c.save(name)
     c = Canvas(SCALE_BW, SCALE_BH)
     c.rrect(0, 0, SCALE_BW, SCALE_BH, 6, TRACK)
     imgs["scale_off"] = c.save("scale_off.png")
@@ -542,15 +556,38 @@ def wave_band(imgs):
     span_w = BAR_X1 - BAR_X0
     for s in range(4):
         y = SPAN_Y[s]
+        # A loop is start..start+length on the take, wrapping past the end. The engine publishes
+        # it as display params: piece A = start..endA (coloured 0..endA, then 0..start masked in
+        # the band colour), piece B = 0..endB (only when the loop wraps; drawn after the mask).
         for lit in (True, False):
             col = STREAM_RGB[s] if lit else STREAM_DIM[s]
             vis = active(s) if lit else muted(s)
-            kids.append(entry("span%d_out" % (s + 1), "Slider",
-                              colour_bar(CLEAR, CLEAR, argb(col), False, P(sp(s, O_OUT))),
+            kids.append(entry("span%d_a" % (s + 1), "Slider",
+                              colour_bar(CLEAR, CLEAR, argb(col), False, P(span_p(s, SP_ENDA))),
                               rect(BAR_X0, y, span_w, SPAN_H), show_if=vis))
-            kids.append(entry("span%d_in" % (s + 1), "Slider",
-                              colour_bar(CLEAR, CLEAR, argb(BAND), False, P(sp(s, O_IN))),
+            kids.append(entry("span%d_mask" % (s + 1), "Slider",
+                              colour_bar(CLEAR, CLEAR, argb(BAND), False, P(span_p(s, SP_START))),
                               rect(BAR_X0, y, span_w, SPAN_H), show_if=vis))
+            kids.append(entry("span%d_b" % (s + 1), "Slider",
+                              colour_bar(CLEAR, CLEAR, argb(col), False, P(span_p(s, SP_ENDB))),
+                              rect(BAR_X0, y, span_w, SPAN_H), show_if=vis))
+        # Brackets bookend the span: a stream-coloured triangle (a TrackAndThumb thumb) standing
+        # on the span's top visible row, tall at the loop's outer edge.
+        # Thumb left edge = rect x + value * (rect w - thumb w). The span's fill runs from
+        # fx0 = BAR_X0 + SPAN_INSET over fw = span_w - 2 * SPAN_INSET, so the start thumb's rect
+        # starts at fx0 (image x = 0 on the start) and the end thumb's at fx0 - w (image x = w
+        # on the end); both are fw + w wide.
+        fx0, fw, w = BAR_X0 + SPAN_INSET, span_w - 2 * SPAN_INSET, CHEV_W
+        cy = y + SPAN_INSET + 1 - CHEV_H     # bottom row of the image = the span's top visible row
+        for lit in (True, False):
+            for end in (False, True):
+                thumb = {"version": 3, "sliderType": "TrackAndThumb", "direction": "Horizontal",
+                         "thumbImage": imgs["chev%d%s%s" % (s, "L" if lit else "D", "e" if end else "s")],
+                         "thumbTrackVisible": False, "revealedImage": "",
+                         "handleName": P(span_p(s, SP_ENDPOS if end else SP_START))}
+                kids.append(entry("chev%d%s%s" % (s + 1, "L" if lit else "D", "e" if end else "s"), "Slider", thumb,
+                                  rect(fx0 - w if end else fx0, cy, fw + w, CHEV_H),
+                                  show_if=active(s) if lit else muted(s)))
     for s in range(4):
         h = SPAN_Y[s] + SPAN_H - MARK_TOP
         for lit in (True, False):
@@ -642,28 +679,40 @@ def record_tab():
         off, on = ["IndexedEnabling/0/2/" + P(param)], ["IndexedEnabling/1/2/" + P(param)]
         tr, sr = rect(x, TY + 118, 300, 36), rect(x, TY + 150, 300, 28)
         hit = dict(btn, onImage=IMGS["hit"], offImage=IMGS["hit"])   # labels swallow touches
-        # busy = (image, show_if): an opaque copy of the tile with another icon, drawn over the
-        # normal one while show_if holds (Save shows "..." while Status = Saving).
-        over = [] if not busy else [entry(key + "_busy", "Button", dict(btn, onImage=busy[0], offImage=busy[0]),
-                                          rect(x, TY, 300, TH), show_if=busy[1])]
-        return [entry(key, "Button", btn, rect(x, TY, 300, TH))] + over + [
+        # busy = (show_if, title, sub): while show_if holds, the lit tile and dark labels are
+        # drawn over the normal ones, like Record/Resample when on. For Save, whose parameter
+        # springs back at once, the lit state follows Status = Saving instead.
+        over = [] if not busy else [
+            entry(key + "_busy", "Button", dict(btn, onImage=IMGS[key + "_on"], offImage=IMGS[key + "_on"]),
+                  rect(x, TY, 300, TH), show_if=busy[0]),
+            text_entry(key + "_tb", busy[1], tr, big(DARK_TEXT), show_if=busy[0]),
+            text_entry(key + "_sb", busy[2], sr, small(DARK_TEXT), show_if=busy[0])]
+        return [entry(key, "Button", btn, rect(x, TY, 300, TH)),
                 text_entry(key + "_t0", title_off, tr, big(TEXT), show_if=off),
                 text_entry(key + "_t1", title_on, tr, big(DARK_TEXT), show_if=on),
                 text_entry(key + "_s0", sub_off, sr, small(TEXT_DIM), show_if=off),
-                text_entry(key + "_s1", sub_on, sr, small(DARK_TEXT), show_if=on),
+                text_entry(key + "_s1", sub_on, sr, small(DARK_TEXT), show_if=on)] + over + [
                 entry(key + "_hit", "Button", hit, rect(x, TY, 300, TH), focus="Yes")]
 
-    def choice_grid(key, param, choices, cells, img_on, img_off):
-        """Radio buttons (buttonId = step) with a white label each, then a transparent radio button
-        over the label, because labels swallow touches. cells[i] = (x, y, w, h) on the tab."""
+    def choice_grid(key, param, choices, cells, img_on, img_off, descs=None):
+        """Radio buttons (buttonId = step) with a white label each (and an optional dimmer
+        description line under it), then a transparent radio button over the labels, because
+        labels swallow touches. cells[i] = (x, y, w, h) on the tab."""
         out = []
         for i, (choice, cell) in enumerate(zip(choices, cells)):
             r = rect(*cell)
             radio = {"version": 2, "onImage": img_on, "offImage": img_off, "buttonId": i,
                      "numButtonsInGroup": len(choices), "handleName": P(param), "gestureBehaviour": "Instant"}
             out.append(entry("%s%d" % (key, i), "Button", radio, r))
-            out.append(text_entry("%s%d_txt" % (key, i), choice, r,
-                                  text_style(20, TEXT, "horizontallyCentred verticallyCentred", "SemiBold")))
+            if descs:
+                x, y, w, h = cell
+                out.append(text_entry("%s%d_txt" % (key, i), choice, rect(x, y + h / 2.0 - 34, w, 36),
+                                      text_style(24, TEXT, "horizontallyCentred verticallyCentred", "SemiBold")))
+                out.append(text_entry("%s%d_desc" % (key, i), descs[i], rect(x, y + h / 2.0 + 2, w, 28),
+                                      text_style(17, TEXT_DIM, "horizontallyCentred verticallyCentred")))
+            else:
+                out.append(text_entry("%s%d_txt" % (key, i), choice, r,
+                                      text_style(20, TEXT, "horizontallyCentred verticallyCentred", "SemiBold")))
             out.append(entry("%s%d_hit" % (key, i), "Button", dict(radio, onImage=IMGS["hit"], offImage=IMGS["hit"]), r))
         return out
 
@@ -672,19 +721,15 @@ def record_tab():
                         "Records input + loop", "Tap to stop")
     saving = ["IndexedEnabling/%d/%d/%s" % (STATUS_CHOICES.index("Saving"), len(STATUS_CHOICES), P(P_STATUS))]
     kids += toggle_tile(COL_X[2], P_SAVE, "save", "Save", "Save", "Bounce to Hildegard Loops", "Bounce to Hildegard Loops",
-                        busy=(IMGS["save_busy"], saving))
-    kids.append(custom("lengthTile", rect(COL_X[3], TY, 300, TH), [("Data", P(P_LENGTH))], focus="Yes"))
-    kids += choice_grid("len", P_LENGTH, LENGTH_CHOICES,
-                        [(COL_X[3] + LEN_BX[i % 3], TY + LEN_BY[i // 3], LEN_BW, LEN_BH) for i in range(len(LENGTH_CHOICES))],
-                        IMGS["len_on"], IMGS["len_off"])
+                        busy=(saving, "Saving", "Bounce to Hildegard Loops"))
 
-    # Bottom row: Dry/Wet fills the space left of the Speed Scale tile (which replaced Status).
+    # Bottom row: Dry/Wet. The Speed Ratios tile is the whole right column (top to bottom).
     RY, RH = 414, 198
     kids.append(custom("dryWetTile", rect(20, RY, DRYWET_W, RH), [("Data", P(P_DRYWET))], focus="Yes"))
-    kids.append(custom("scaleTile", rect(COL_X[3], RY, 300, RH), [("Data", P(P_SCALE))], focus="Yes"))
+    kids.append(custom("scaleTile", rect(COL_X[3], TY, 300, SCALE_TILE_H), [("Data", P(P_SCALE))], focus="Yes"))
     kids += choice_grid("scale", P_SCALE, SCALE_CHOICES,
-                        [(COL_X[3] + 12, RY + SCALE_BY[i], SCALE_BW, SCALE_BH) for i in range(len(SCALE_CHOICES))],
-                        IMGS["scale_on"], IMGS["scale_off"])
+                        [(COL_X[3] + 12, TY + SCALE_BY[i], SCALE_BW, SCALE_BH) for i in range(len(SCALE_CHOICES))],
+                        IMGS["scale_on"], IMGS["scale_off"], descs=SCALE_DESC)
     return tab("RECORD", 0, kids, [])
 
 
@@ -720,8 +765,7 @@ def tui():
             ("knob overlay bi", knob_overlay("Bipolar")),
             ("touchShield", component([])),
             ("waveBand", wave_band(IMGS)),
-            ("lengthTile", caption_tile(196)),
-            ("scaleTile", caption_tile(198, "Playback Speed Ratios", 20)),
+            ("scaleTile", caption_tile(SCALE_TILE_H, "Playback Speed Ratios", 22)),
             ("dryWetTile", dry_wet_tile())]
     for s in range(4):
         for lit in (True, False):
@@ -731,15 +775,15 @@ def tui():
             defs.append(("mode_s%d%s" % (s + 1, sfx), mode_slot(s, lit, IMGS)))
             defs.append(("ctrl_s%d_spd%s" % (s + 1, sfx), control_slot(s, False, lit, speed=True)))
 
-    repl = [(P_LENGTH, LENGTH_CHOICES), (P_RECORD, ["Off", "On"]), (P_RESAMPLE, ["Off", "On"]),
+    repl = [(P_RECORD, ["Off", "On"]), (P_RESAMPLE, ["Off", "On"]),
             (P_SAVE, ["Off", "On"])]
     for s in range(4):
         repl += [(sp(s, O_MODE), ["Forward", "Reverse", "Ping-pong"]), (sp(s, O_MUTE), ["Active", "Muted"])]
     repl.append((P_STATUS, STATUS_CHOICES))
     repl.append((P_SCALE, SCALE_CHOICES))
 
-    # Loop: In, Out, Mode, Speed.  Mix: Tone, Pan, Volume, (empty).  docs/UI-LAYOUT.md
-    loop_rows = [("In", O_IN, "uni"), ("Out", O_OUT, "uni"), ("Mode", O_MODE, "mode"), ("Speed Ratio", O_SPEED, "spd")]
+    # Loop: Start, Length, Mode, Speed.  Mix: Tone, Pan, Volume, (empty).  docs/UI-LAYOUT.md
+    loop_rows = [("Start", O_START, "uni"), ("Length", O_LENGTH, "uni"), ("Mode", O_MODE, "mode"), ("Speed Ratio", O_SPEED, "spd")]
     mix_rows = [("Tone", O_TONE, "bi"), ("Pan", O_PAN, "bi"), ("Volume", O_VOLUME, "uni"), None]
 
     return {"pageData": {
@@ -765,7 +809,7 @@ def qlinks(loop_rows, mix_rows):
 
     mapping = [
         {"Tab": 1, "SubTab": 1, "Bank Direction": "Column",
-         "Q-Links": grid({(0, 0): P_DRYWET, (1, 0): P_LENGTH, (2, 0): P_SCALE})},
+         "Q-Links": grid({(0, 0): P_DRYWET, (1, 0): P_SCALE})},
         {"Tab": 2, "SubTab": 1, "Bank Direction": "Column", "Q-Links": stream_grid(loop_rows)},
         {"Tab": 3, "SubTab": 1, "Bank Direction": "Column", "Q-Links": stream_grid(mix_rows)},
     ]

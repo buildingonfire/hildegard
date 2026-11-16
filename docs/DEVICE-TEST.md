@@ -22,7 +22,12 @@ or program track's insert.
 - [ ] After a take, **128 bars** appear. If they don't, the full-page refresh isn't
       redrawing the Meters; try notifying each bar instead.
 - [ ] Bars grow both up and down from the centre line.
-- [ ] Each unmuted stream's **loop span** shows in its colour and follows In/Out.
+- [ ] Each unmuted stream's **loop span** shows in its colour and follows Start/Length.
+- [ ] A loop past the end (e.g. Start 80, Length 40) draws as two pieces: 80-100% and 0-20%.
+- [ ] Each span's ends have a small bracket rising above the line, tall at the outer edge,
+      the same in every loop mode; dim when the stream is muted.
+- [ ] Turning Start or Length while a drone plays does not click or flutter; a wrapped loop
+      plays smoothly across the end of the take.
 - [ ] Each stream's **playhead marker** moves smoothly while playing and holds on Stop.
 - [ ] Forward/Reverse loops: the marker wraps to exactly IN (not ~10% in). Inside the loop
       crossfade it moves at double speed and wraps at the fade's midpoint (display only).
@@ -52,13 +57,9 @@ or program track's insert.
 
 - [ ] Free: tap Record, play, tap again. The status goes Recording → Ready and the loop plays.
 - [ ] **No click or gap when a new take replaces the old one** (20 ms crossfade).
-- [ ] 1 bar while playing: the status reads Armed, recording starts on the next bar, stops itself
-      after 1 bar, and Record un-lights. **The new loop starts exactly on the bar line.**
-- [ ] 2 bars armed while stopped: it waits, then starts on Play.
-- [ ] Tap while armed cancels.
+- (Bar-synced recording was retired on 2026-11-16; every take is Free.)
 - [ ] **Resample** is its own record button (since 2026-11-15): tap = take of what you hear
-      (input + streams at the Dry/Wet mix), tap again = stop. With 1 bar it arms and ends
-      itself like Record, and the new loop stays in time with the beat.
+      (input + streams at the Dry/Wet mix), tap again = stop.
 - [ ] Tapping Resample during a Record take (or vice versa) is ignored; the button springs back.
 - [ ] Mode is Forward / Reverse / Ping-pong; Speed is 0-4x and right = faster in every mode.
       Switching Forward <-> Reverse while playing turns the head around without a click.

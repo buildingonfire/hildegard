@@ -8625,7 +8625,7 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span1_out",
+                  "name": "span1_a",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8635,7 +8635,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ffef9f27",
                     "isBipolar": false,
-                    "handleName": "Parameter 10"
+                    "handleName": "Parameter 176"
                   }
                 },
                 "handle remapping": {
@@ -8656,7 +8656,7 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span1_in",
+                  "name": "span1_mask",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8666,7 +8666,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff1c1c1f",
                     "isBipolar": false,
-                    "handleName": "Parameter 9"
+                    "handleName": "Parameter 175"
                   }
                 },
                 "handle remapping": {
@@ -8687,7 +8687,38 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span1_out",
+                  "name": "span1_b",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "ffef9f27",
+                    "isBipolar": false,
+                    "handleName": "Parameter 177"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "10 132 1220 8",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "span1_a",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8697,7 +8728,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff705226",
                     "isBipolar": false,
-                    "handleName": "Parameter 10"
+                    "handleName": "Parameter 176"
                   }
                 },
                 "handle remapping": {
@@ -8718,7 +8749,7 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span1_in",
+                  "name": "span1_mask",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8728,7 +8759,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff1c1c1f",
                     "isBipolar": false,
-                    "handleName": "Parameter 9"
+                    "handleName": "Parameter 175"
                   }
                 },
                 "handle remapping": {
@@ -8749,7 +8780,158 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span2_out",
+                  "name": "span1_b",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "ff705226",
+                    "isBipolar": false,
+                    "handleName": "Parameter 177"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "10 132 1220 8",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev1Ls",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s1_lit_start.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 175"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "12 124 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev1Le",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s1_lit_end.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 178"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "6 124 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 12"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev1Ds",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s1_dim_start.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 175"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "12 124 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev1De",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s1_dim_end.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 178"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "6 124 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 12"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "span2_a",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8759,7 +8941,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "fffac775",
                     "isBipolar": false,
-                    "handleName": "Parameter 18"
+                    "handleName": "Parameter 181"
                   }
                 },
                 "handle remapping": {
@@ -8780,7 +8962,7 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span2_in",
+                  "name": "span2_mask",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8790,7 +8972,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff1c1c1f",
                     "isBipolar": false,
-                    "handleName": "Parameter 17"
+                    "handleName": "Parameter 180"
                   }
                 },
                 "handle remapping": {
@@ -8811,7 +8993,38 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span2_out",
+                  "name": "span2_b",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "fffac775",
+                    "isBipolar": false,
+                    "handleName": "Parameter 182"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "10 142 1220 8",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "span2_a",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8821,7 +9034,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff746144",
                     "isBipolar": false,
-                    "handleName": "Parameter 18"
+                    "handleName": "Parameter 181"
                   }
                 },
                 "handle remapping": {
@@ -8842,7 +9055,7 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span2_in",
+                  "name": "span2_mask",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8852,7 +9065,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff1c1c1f",
                     "isBipolar": false,
-                    "handleName": "Parameter 17"
+                    "handleName": "Parameter 180"
                   }
                 },
                 "handle remapping": {
@@ -8873,7 +9086,158 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span3_out",
+                  "name": "span2_b",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "ff746144",
+                    "isBipolar": false,
+                    "handleName": "Parameter 182"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "10 142 1220 8",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev2Ls",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s2_lit_start.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 180"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "12 134 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev2Le",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s2_lit_end.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 183"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "6 134 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 20"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev2Ds",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s2_dim_start.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 180"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "12 134 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev2De",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s2_dim_end.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 183"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "6 134 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 20"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "span3_a",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8883,7 +9247,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff7fb33a",
                     "isBipolar": false,
-                    "handleName": "Parameter 26"
+                    "handleName": "Parameter 186"
                   }
                 },
                 "handle remapping": {
@@ -8904,7 +9268,7 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span3_in",
+                  "name": "span3_mask",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8914,7 +9278,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff1c1c1f",
                     "isBipolar": false,
-                    "handleName": "Parameter 25"
+                    "handleName": "Parameter 185"
                   }
                 },
                 "handle remapping": {
@@ -8935,7 +9299,38 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span3_out",
+                  "name": "span3_b",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "ff7fb33a",
+                    "isBipolar": false,
+                    "handleName": "Parameter 187"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "10 152 1220 8",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "span3_a",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8945,7 +9340,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff45592e",
                     "isBipolar": false,
-                    "handleName": "Parameter 26"
+                    "handleName": "Parameter 186"
                   }
                 },
                 "handle remapping": {
@@ -8966,7 +9361,7 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span3_in",
+                  "name": "span3_mask",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -8976,7 +9371,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff1c1c1f",
                     "isBipolar": false,
-                    "handleName": "Parameter 25"
+                    "handleName": "Parameter 185"
                   }
                 },
                 "handle remapping": {
@@ -8997,7 +9392,158 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span4_out",
+                  "name": "span3_b",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "ff45592e",
+                    "isBipolar": false,
+                    "handleName": "Parameter 187"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "10 152 1220 8",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev3Ls",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s3_lit_start.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 185"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "12 144 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev3Le",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s3_lit_end.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 188"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "6 144 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 28"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev3Ds",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s3_dim_start.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 185"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "12 144 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev3De",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s3_dim_end.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 188"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "6 144 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 28"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "span4_a",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -9007,7 +9553,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff4a9be8",
                     "isBipolar": false,
-                    "handleName": "Parameter 34"
+                    "handleName": "Parameter 191"
                   }
                 },
                 "handle remapping": {
@@ -9028,7 +9574,7 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span4_in",
+                  "name": "span4_mask",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -9038,7 +9584,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff1c1c1f",
                     "isBipolar": false,
-                    "handleName": "Parameter 33"
+                    "handleName": "Parameter 190"
                   }
                 },
                 "handle remapping": {
@@ -9059,7 +9605,38 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span4_out",
+                  "name": "span4_b",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "ff4a9be8",
+                    "isBipolar": false,
+                    "handleName": "Parameter 192"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "10 162 1220 8",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "span4_a",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -9069,7 +9646,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff315070",
                     "isBipolar": false,
-                    "handleName": "Parameter 34"
+                    "handleName": "Parameter 191"
                   }
                 },
                 "handle remapping": {
@@ -9090,7 +9667,7 @@
                 "version": 2,
                 "componentData": {
                   "version": 1,
-                  "name": "span4_in",
+                  "name": "span4_mask",
                   "type": "Slider",
                   "data": {
                     "version": 2,
@@ -9100,7 +9677,7 @@
                     "outlineColour": "00000000",
                     "valueColour": "ff1c1c1f",
                     "isBipolar": false,
-                    "handleName": "Parameter 33"
+                    "handleName": "Parameter 190"
                   }
                 },
                 "handle remapping": {
@@ -9114,6 +9691,157 @@
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
                   "bounds": "10 162 1220 8",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "span4_b",
+                  "type": "Slider",
+                  "data": {
+                    "version": 2,
+                    "sliderType": "ColourBar",
+                    "direction": "Horizontal",
+                    "backgroundColour": "00000000",
+                    "outlineColour": "00000000",
+                    "valueColour": "ff315070",
+                    "isBipolar": false,
+                    "handleName": "Parameter 192"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "10 162 1220 8",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev4Ls",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s4_lit_start.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 190"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "12 154 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev4Le",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s4_lit_end.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 193"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "6 154 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 36"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev4Ds",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s4_dim_start.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 190"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "12 154 1222 11",
+                  "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "chev4De",
+                  "type": "Slider",
+                  "data": {
+                    "version": 3,
+                    "sliderType": "TrackAndThumb",
+                    "direction": "Horizontal",
+                    "thumbImage": "chev_s4_dim_end.png",
+                    "thumbTrackVisible": false,
+                    "revealedImage": "",
+                    "handleName": "Parameter 193"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 2,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "6 154 1222 11",
                   "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 36"]
                 }
               },
@@ -9423,102 +10151,6 @@
           }
         },
         {
-          "key": "lengthTile",
-          "value": {
-            "version": 2,
-            "actions": [
-              {
-                "version": 1,
-                "onAction": "Mouse Down",
-                "handler": "Q-Link",
-                "handleName": "Data",
-                "additionalData": ""
-              }
-            ],
-            "backgroundData": {
-              "version": 1,
-              "focussed": {
-                "version": 1,
-                "colour": "ff2a2a30",
-                "image": ""
-              },
-              "unfocussed": {
-                "version": 1,
-                "colour": "ff222226",
-                "image": ""
-              }
-            },
-            "ignoreMousePresses": false,
-            "disableCoarseDataWheel": false,
-            "componentsData": [
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
-                  "name": "focus",
-                  "type": "Focus",
-                  "data": {
-                    "version": 1,
-                    "backgroundColour": "10ffffff",
-                    "outlineColour": "ffece7de",
-                    "backgroundInset": 3.0,
-                    "outlineThickness": 2.0
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "WhenFocussed",
-                  "boundsType": "Absolute",
-                  "bounds": "0 0 300 196"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
-                  "name": "cap",
-                  "type": "Label",
-                  "data": {
-                    "version": 1,
-                    "textStyle": {
-                      "version": 1,
-                      "font": {
-                        "version": 1,
-                        "name": "Titillium Web",
-                        "style": "SemiBold",
-                        "height": 24.0
-                      },
-                      "colour": "ffececee",
-                      "justification": "horizontallyCentred verticallyCentred",
-                      "case": "Upper Case"
-                    },
-                    "type": "Name",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "8 14 284 30"
-                }
-              }
-            ]
-          }
-        },
-        {
           "key": "scaleTile",
           "value": {
             "version": 2,
@@ -9571,7 +10203,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "WhenFocussed",
                   "boundsType": "Absolute",
-                  "bounds": "0 0 300 198"
+                  "bounds": "0 0 300 406"
                 }
               },
               {
@@ -9588,7 +10220,7 @@
                         "version": 1,
                         "name": "Titillium Web",
                         "style": "SemiBold",
-                        "height": 20.0
+                        "height": 22.0
                       },
                       "colour": "ffececee",
                       "justification": "horizontallyCentred verticallyCentred",
@@ -14827,10 +15459,6 @@
     },
     "replacementStrings": [
       {
-        "key": "Parameter 3",
-        "value": ["Off", "1 bar", "2 bars", "4 bars", "8 bars", "16 bars"]
-      },
-      {
         "key": "Parameter 1",
         "value": ["Off", "On"]
       },
@@ -15389,36 +16017,6 @@
               "version": 2,
               "componentData": {
                 "version": 1,
-                "name": "save_busy",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "save_busy.png",
-                  "offImage": "save_busy.png",
-                  "buttonId": 1,
-                  "numButtonsInGroup": 1,
-                  "handleName": "Parameter 4",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 2,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "646 206 300 196",
-                "additionalInvalidatingHandles": ["IndexedEnabling/4/8/Parameter 41"]
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
                 "name": "save_t0",
                 "type": "Label",
                 "data": {
@@ -15571,6 +16169,112 @@
               "version": 2,
               "componentData": {
                 "version": 1,
+                "name": "save_busy",
+                "type": "Button",
+                "data": {
+                  "version": 2,
+                  "onImage": "save_on.png",
+                  "offImage": "save_on.png",
+                  "buttonId": 1,
+                  "numButtonsInGroup": 1,
+                  "handleName": "Parameter 4",
+                  "gestureBehaviour": "Instant"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": []
+              },
+              "bounds": {
+                "version": 2,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "646 206 300 196",
+                "additionalInvalidatingHandles": ["IndexedEnabling/4/8/Parameter 41"]
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
+                "name": "save_tb",
+                "type": "Label",
+                "data": {
+                  "version": 1,
+                  "textStyle": {
+                    "version": 1,
+                    "font": {
+                      "version": 1,
+                      "name": "Titillium Web",
+                      "style": "SemiBold",
+                      "height": 28.0
+                    },
+                    "colour": "ff161618",
+                    "justification": "horizontallyCentred verticallyCentred",
+                    "case": "Upper Case"
+                  },
+                  "type": "Name",
+                  "handleName": "WithName[Saving]/Parameter 0"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": []
+              },
+              "bounds": {
+                "version": 2,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "646 324 300 36",
+                "additionalInvalidatingHandles": ["IndexedEnabling/4/8/Parameter 41"]
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
+                "name": "save_sb",
+                "type": "Label",
+                "data": {
+                  "version": 1,
+                  "textStyle": {
+                    "version": 1,
+                    "font": {
+                      "version": 1,
+                      "name": "Titillium Web",
+                      "style": "Regular",
+                      "height": 18.0
+                    },
+                    "colour": "ff161618",
+                    "justification": "horizontallyCentred verticallyCentred",
+                    "case": "Original"
+                  },
+                  "type": "Name",
+                  "handleName": "WithName[Bounce to Hildegard Loops]/Parameter 0"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": []
+              },
+              "bounds": {
+                "version": 2,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "646 356 300 28",
+                "additionalInvalidatingHandles": ["IndexedEnabling/4/8/Parameter 41"]
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
                 "name": "save_hit",
                 "type": "Button",
                 "data": {
@@ -15594,605 +16298,6 @@
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
                 "bounds": "646 206 300 196"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "lengthTile",
-                "type": "lengthTile",
-                "data": {
-                  "version": 1,
-                  "handleName": "Data"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": [
-                  {
-                    "key": "Data",
-                    "value": "Parameter 3"
-                  }
-                ]
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "Yes",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "959 206 300 196"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len0",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "length_on.png",
-                  "offImage": "length_off.png",
-                  "buttonId": 0,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "971 264 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len0_txt",
-                "type": "Label",
-                "data": {
-                  "version": 1,
-                  "textStyle": {
-                    "version": 1,
-                    "font": {
-                      "version": 1,
-                      "name": "Titillium Web",
-                      "style": "SemiBold",
-                      "height": 20.0
-                    },
-                    "colour": "ffececee",
-                    "justification": "horizontallyCentred verticallyCentred",
-                    "case": "Original"
-                  },
-                  "type": "Name",
-                  "handleName": "WithName[Off]/Parameter 0"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "971 264 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len0_hit",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "hit_clear.png",
-                  "offImage": "hit_clear.png",
-                  "buttonId": 0,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "971 264 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len1",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "length_on.png",
-                  "offImage": "length_off.png",
-                  "buttonId": 1,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1065 264 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len1_txt",
-                "type": "Label",
-                "data": {
-                  "version": 1,
-                  "textStyle": {
-                    "version": 1,
-                    "font": {
-                      "version": 1,
-                      "name": "Titillium Web",
-                      "style": "SemiBold",
-                      "height": 20.0
-                    },
-                    "colour": "ffececee",
-                    "justification": "horizontallyCentred verticallyCentred",
-                    "case": "Original"
-                  },
-                  "type": "Name",
-                  "handleName": "WithName[1 bar]/Parameter 0"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1065 264 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len1_hit",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "hit_clear.png",
-                  "offImage": "hit_clear.png",
-                  "buttonId": 1,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1065 264 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len2",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "length_on.png",
-                  "offImage": "length_off.png",
-                  "buttonId": 2,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1159 264 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len2_txt",
-                "type": "Label",
-                "data": {
-                  "version": 1,
-                  "textStyle": {
-                    "version": 1,
-                    "font": {
-                      "version": 1,
-                      "name": "Titillium Web",
-                      "style": "SemiBold",
-                      "height": 20.0
-                    },
-                    "colour": "ffececee",
-                    "justification": "horizontallyCentred verticallyCentred",
-                    "case": "Original"
-                  },
-                  "type": "Name",
-                  "handleName": "WithName[2 bars]/Parameter 0"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1159 264 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len2_hit",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "hit_clear.png",
-                  "offImage": "hit_clear.png",
-                  "buttonId": 2,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1159 264 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len3",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "length_on.png",
-                  "offImage": "length_off.png",
-                  "buttonId": 3,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "971 332 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len3_txt",
-                "type": "Label",
-                "data": {
-                  "version": 1,
-                  "textStyle": {
-                    "version": 1,
-                    "font": {
-                      "version": 1,
-                      "name": "Titillium Web",
-                      "style": "SemiBold",
-                      "height": 20.0
-                    },
-                    "colour": "ffececee",
-                    "justification": "horizontallyCentred verticallyCentred",
-                    "case": "Original"
-                  },
-                  "type": "Name",
-                  "handleName": "WithName[4 bars]/Parameter 0"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "971 332 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len3_hit",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "hit_clear.png",
-                  "offImage": "hit_clear.png",
-                  "buttonId": 3,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "971 332 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len4",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "length_on.png",
-                  "offImage": "length_off.png",
-                  "buttonId": 4,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1065 332 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len4_txt",
-                "type": "Label",
-                "data": {
-                  "version": 1,
-                  "textStyle": {
-                    "version": 1,
-                    "font": {
-                      "version": 1,
-                      "name": "Titillium Web",
-                      "style": "SemiBold",
-                      "height": 20.0
-                    },
-                    "colour": "ffececee",
-                    "justification": "horizontallyCentred verticallyCentred",
-                    "case": "Original"
-                  },
-                  "type": "Name",
-                  "handleName": "WithName[8 bars]/Parameter 0"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1065 332 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len4_hit",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "hit_clear.png",
-                  "offImage": "hit_clear.png",
-                  "buttonId": 4,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1065 332 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len5",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "length_on.png",
-                  "offImage": "length_off.png",
-                  "buttonId": 5,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1159 332 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len5_txt",
-                "type": "Label",
-                "data": {
-                  "version": 1,
-                  "textStyle": {
-                    "version": 1,
-                    "font": {
-                      "version": 1,
-                      "name": "Titillium Web",
-                      "style": "SemiBold",
-                      "height": 20.0
-                    },
-                    "colour": "ffececee",
-                    "justification": "horizontallyCentred verticallyCentred",
-                    "case": "Original"
-                  },
-                  "type": "Name",
-                  "handleName": "WithName[16 bars]/Parameter 0"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1159 332 88 58"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "len5_hit",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "hit_clear.png",
-                  "offImage": "hit_clear.png",
-                  "buttonId": 5,
-                  "numButtonsInGroup": 6,
-                  "handleName": "Parameter 3",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1159 332 88 58"
               }
             },
             {
@@ -16250,7 +16355,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "959 414 300 198"
+                "bounds": "959 206 300 406"
               }
             },
             {
@@ -16279,7 +16384,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "971 466 276 42"
+                "bounds": "971 262 276 104"
               }
             },
             {
@@ -16296,7 +16401,7 @@
                       "version": 1,
                       "name": "Titillium Web",
                       "style": "SemiBold",
-                      "height": 20.0
+                      "height": 24.0
                     },
                     "colour": "ffececee",
                     "justification": "horizontallyCentred verticallyCentred",
@@ -16316,7 +16421,44 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "971 466 276 42"
+                "bounds": "971 280 276 36"
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
+                "name": "scale0_desc",
+                "type": "Label",
+                "data": {
+                  "version": 1,
+                  "textStyle": {
+                    "version": 1,
+                    "font": {
+                      "version": 1,
+                      "name": "Titillium Web",
+                      "style": "Regular",
+                      "height": 17.0
+                    },
+                    "colour": "ff8a8a90",
+                    "justification": "horizontallyCentred verticallyCentred",
+                    "case": "Original"
+                  },
+                  "type": "Name",
+                  "handleName": "WithName[1/4, 1/2, 1, 2, 4x]/Parameter 0"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": []
+              },
+              "bounds": {
+                "version": 1,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "971 316 276 28"
               }
             },
             {
@@ -16345,7 +16487,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "971 466 276 42"
+                "bounds": "971 262 276 104"
               }
             },
             {
@@ -16374,7 +16516,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "971 514 276 42"
+                "bounds": "971 378 276 104"
               }
             },
             {
@@ -16391,7 +16533,7 @@
                       "version": 1,
                       "name": "Titillium Web",
                       "style": "SemiBold",
-                      "height": 20.0
+                      "height": 24.0
                     },
                     "colour": "ffececee",
                     "justification": "horizontallyCentred verticallyCentred",
@@ -16411,7 +16553,44 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "971 514 276 42"
+                "bounds": "971 396 276 36"
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
+                "name": "scale1_desc",
+                "type": "Label",
+                "data": {
+                  "version": 1,
+                  "textStyle": {
+                    "version": 1,
+                    "font": {
+                      "version": 1,
+                      "name": "Titillium Web",
+                      "style": "Regular",
+                      "height": 17.0
+                    },
+                    "colour": "ff8a8a90",
+                    "justification": "horizontallyCentred verticallyCentred",
+                    "case": "Original"
+                  },
+                  "type": "Name",
+                  "handleName": "WithName[Adds fifths: 1/3, 2/3, 3/2, 3x]/Parameter 0"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": []
+              },
+              "bounds": {
+                "version": 1,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "971 432 276 28"
               }
             },
             {
@@ -16440,7 +16619,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "971 514 276 42"
+                "bounds": "971 378 276 104"
               }
             },
             {
@@ -16469,7 +16648,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "971 562 276 42"
+                "bounds": "971 494 276 104"
               }
             },
             {
@@ -16486,7 +16665,7 @@
                       "version": 1,
                       "name": "Titillium Web",
                       "style": "SemiBold",
-                      "height": 20.0
+                      "height": 24.0
                     },
                     "colour": "ffececee",
                     "justification": "horizontallyCentred verticallyCentred",
@@ -16506,7 +16685,44 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "971 562 276 42"
+                "bounds": "971 512 276 36"
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
+                "name": "scale2_desc",
+                "type": "Label",
+                "data": {
+                  "version": 1,
+                  "textStyle": {
+                    "version": 1,
+                    "font": {
+                      "version": 1,
+                      "name": "Titillium Web",
+                      "style": "Regular",
+                      "height": 17.0
+                    },
+                    "colour": "ff8a8a90",
+                    "justification": "horizontallyCentred verticallyCentred",
+                    "case": "Original"
+                  },
+                  "type": "Name",
+                  "handleName": "WithName[Any speed, no snapping]/Parameter 0"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": []
+              },
+              "bounds": {
+                "version": 1,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "971 548 276 28"
               }
             },
             {
@@ -16535,7 +16751,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "971 562 276 42"
+                "bounds": "971 494 276 104"
               }
             }
           ]
@@ -16775,7 +16991,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[In]/Parameter 0"
+                  "handleName": "WithName[Start]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -16843,7 +17059,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[In]/Parameter 0"
+                  "handleName": "WithName[Start]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -16911,7 +17127,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Out]/Parameter 0"
+                  "handleName": "WithName[Length]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -16979,7 +17195,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Out]/Parameter 0"
+                  "handleName": "WithName[Length]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17453,7 +17669,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[In]/Parameter 0"
+                  "handleName": "WithName[Start]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17521,7 +17737,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[In]/Parameter 0"
+                  "handleName": "WithName[Start]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17589,7 +17805,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Out]/Parameter 0"
+                  "handleName": "WithName[Length]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -17657,7 +17873,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Out]/Parameter 0"
+                  "handleName": "WithName[Length]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18131,7 +18347,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[In]/Parameter 0"
+                  "handleName": "WithName[Start]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18199,7 +18415,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[In]/Parameter 0"
+                  "handleName": "WithName[Start]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18267,7 +18483,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Out]/Parameter 0"
+                  "handleName": "WithName[Length]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18335,7 +18551,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Out]/Parameter 0"
+                  "handleName": "WithName[Length]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18809,7 +19025,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[In]/Parameter 0"
+                  "handleName": "WithName[Start]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18877,7 +19093,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[In]/Parameter 0"
+                  "handleName": "WithName[Start]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -18945,7 +19161,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Out]/Parameter 0"
+                  "handleName": "WithName[Length]/Parameter 0"
                 }
               },
               "handle remapping": {
@@ -19013,7 +19229,7 @@
                     "case": "Upper Case"
                   },
                   "type": "Name",
-                  "handleName": "WithName[Out]/Parameter 0"
+                  "handleName": "WithName[Length]/Parameter 0"
                 }
               },
               "handle remapping": {

@@ -27,22 +27,28 @@ Three pages, on the function keys:
 
 - **F1 Record** (opens here): **Record** (tap to start, tap to stop), **Resample** (off:
   record the track's input; on: record Hildegard's own output, as heard), **Save** (bounce
-  what you hear to a WAV), **Length** (Free, or 1/2/4/8/16 bars), **Dry/Wet**, and a status line.
-- **F2 Loop**: per stream, **In** and **Out** (the loop region, % of the recording),
-  **Mode** (loop or ping-pong) and **Speed**.
+  what you hear to a WAV; the tile lights while it saves), **Dry/Wet**, and **Playback Speed
+  Ratios** (Octaves / Ratios / Smooth: how the Speed knobs snap).
+- **F2 Loop**: per stream, **Start** and **Length** (the loop, % of the recording; a loop that
+  runs past the end of the recording carries on from its beginning), **Mode** (Forward,
+  Reverse or Ping-pong) and **Speed**.
 - **F3 Mix**: per stream, **Tone** (dark ↔ bright tilt), **Pan** and **Volume**.
 
 Tap a stream's name to mute or unmute it. The waveform across the top of every page shows
-the recording, each stream's loop region and where each playhead is.
+the recording, each stream's loop (a line that may wrap from the right edge round to the
+left) and where each playhead is. A small bracket rises at each end of a loop line, like a
+DAW's loop markers, so you can tell the start from the end when a loop wraps.
 
-- **Length = N bars**: tapping Record *arms* it. Recording starts on the next bar line (or
-  when you press Play) and stops by itself after N bars. Tap again while armed to cancel.
-  If the MPC gives no tempo, bar lengths behave like Free. Maximum is 30 seconds.
-- **Speed** runs from −8× to +8× (negative = reverse, 0 = hold and silent). The knob
-  pauses briefly on **0, ±0.5×, ±1× and ±2×** as you turn through them, and gives the
-  slow end more room than the fast end.
+- **Record** always records freely: tap to start, tap to stop, up to 30 seconds.
+  (Hildegard is built for harmonic material first: drones, layers, resampling. Loops are
+  not tempo-locked, and a little drift is part of the sound.)
+- **Start / Length while playing**: moving them doesn't disturb what is playing; the loop's
+  ends move and you hear the change when the playhead reaches them. If the loop moves away
+  from the playhead, it jumps into the loop with a short crossfade.
+- **Speed** runs from 0 to 4× (0 = hold and silent); the direction comes from Mode. With
+  Playback Speed Ratios on Octaves or Ratios it snaps to musical intervals; Smooth doesn't.
 - **Transport**: streams play while the MPC plays, fade out and hold on Stop, and restart
-  from their in points on Play. The dry signal always passes.
+  from their loop starts on Play (Reverse: the loop's end). The dry signal always passes.
 - **Save** writes a 24-bit/44.1 kHz stereo WAV of the *effected* sound (one loop length)
   to `Hildegard Loops/` at the root of the drive Hildegard is installed on.
 - **Projects** keep the recording: saving an MPC project stores the recorded chunk with
@@ -63,15 +69,22 @@ values redraw when the plugin notifies the MPC.
 and the `_verify/` driver):
 - The hand-written skin (`skins/`): the three pages, waveform, loop spans, playhead
   markers, status text, mute dimming, Q-Link maps.
-- Bar-synced recording.
 - The sample-accurate take swap with a ~20 ms per-stream crossfade from the old recording
-  to the new one (no click; the new take starts on the bar line it ended on).
+  to the new one (no click).
 - The speed-knob curve and snapping.
 - Saving the recording with the project, and the built-in presets.
 - If the MPC resets the plugin when its transport stops, a take in progress is now kept
   (as if Record had been tapped off) instead of being thrown away.
 
 **Not done yet:** final colour pass; CPU benchmark on Gen-1 (32-bit) MPCs; release packaging.
+
+**To do (ideas, not promised):**
+- Start a capture exactly on the downbeat (the bar-sync code from the retired Fixed Loop
+  Length is still in the engine, switched off).
+- A crossfade-length control. (Drawing the loop ends as long as the crossfade was tried on
+  2026-11-16 and did not read well; the ends are fixed-size brackets.)
+- Fixed Loop Length (bar-synced recording) was removed on 2026-11-16: tempo-exact looping
+  belongs in a possible rhythm-first sibling plugin, not here.
 
 **To confirm (SPEC §16):** the square-law volume taper and the tone range.
 

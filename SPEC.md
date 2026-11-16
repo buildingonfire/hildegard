@@ -8,6 +8,28 @@ It is free and open source, built with Akai's official MPC Plugin SDK, and inten
 
 ---
 
+## Changes since v1.0 (these override the sections below)
+
+- **2026-11-16: Start + Length replace In + Out** (parameter slots +4/+5 keep their places;
+  ids are now `sN_start` / `sN_length`). The take is treated as a circle: a loop that runs past
+  the end continues from the beginning. Where the take's end meets its start there is a 20 ms
+  seam crossfade, built into the circle so every loop position is seamless. Moving Start or
+  Length leaves the playhead where it is unless the loop no longer contains it (then a 20 ms
+  crossfaded jump); a change while the head is inside the loop crossfade is crossfaded too.
+  The loop crossfade itself is unchanged (10% of the loop, fade-in from the loop's start,
+  so each pass is that much shorter than Length: fine for harmonic material).
+- **2026-11-16: Fixed Loop Length retired.** Global slot 3 stays as a hidden, unread
+  parameter so later indices do not move. Recording is always Free. Hildegard is
+  harmonic-material-first; tempo-exact looping is out of scope.
+- **2026-11-16: span drawing** uses display params 175-194 (per stream: span start, end of
+  piece A, end of piece B when wrapping, end position, and an unused slot that once held a
+  chevron width level). Each span end gets a fixed 6 px bracket that rises 10 px above the
+  span, tall at the outer edge, in the stream's colour (lit or dim with Mute).
+- **2026-11-16: Save** lights its tile (like Record/Resample) while Status = Saving, held
+  0.75 s after the write.
+
+---
+
 ## 0. Read This First (for Claude Code)
 
 1. Work inside a clone of Akai's SDK: `https://github.com/inmusic-software/mpc-plugin-builder-sdk`. Read its `AGENTS.md`, `CLAUDE.md`, and the docs in `docs/` before writing code. The SDK's rules override anything in this spec that conflicts with them; flag any conflict you find.
@@ -190,8 +212,8 @@ For stream *s* (1–4), base index = 5 + (s − 1) × 8.
 | +1 | `sN_tone` | Tone N | float | −100 to +100 (text: darker / flat / brighter with amount) | 0 |
 | +2 | `sN_pan` | Pan N | float | L100 to R100 | C / L30 / R30 / C |
 | +3 | `sN_volume` | Volume N | float | 0–100 % | 80 / 65 / 60 / 50 % |
-| +4 | `sN_in` | In N | float | 0–100 % of chunk | 0 % |
-| +5 | `sN_out` | Out N | float | 0–100 % of chunk | 100 % |
+| +4 | `sN_start` | Start N | float | 0–100 % of chunk (was In) | 0 % |
+| +5 | `sN_length` | Length N | float | 0–100 % of chunk; wraps past the end (was Out) | 100 % |
 | +6 | `sN_mode` | Mode N | choice | Loop, Ping-pong | Loop |
 | +7 | `sN_mute` | Mute N | bool | display text "Stream N – Active" / "Stream N – Muted" | S1 Active; S2–S4 Muted |
 
