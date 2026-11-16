@@ -540,6 +540,16 @@ int main(int argc, char** argv)
             return pk;
         };
         const double rs = takePeak(kResample);     // resample the playing loop
+        // Normalised resamples: at Dry/Wet 50% (wet -3 dB) with default Volume/pan, each
+        // generation used to come back several dB quieter. Now the level holds. (gen[0] is set
+        // by the Dry/Wet glide recorded into it, so compare from gen[1].)
+        e->setParameter(e, kDryWet, 0.5f);
+        double gen[4];
+        for (int k = 0; k < 4; ++k) gen[k] = takePeak(kResample);
+        std::printf("  resample: generations at Dry/Wet 50%%: %.4f %.4f %.4f %.4f\n", gen[0], gen[1], gen[2], gen[3]);
+        check("resample: repeated resamples keep their level (within 1.5 dB)",
+              gen[3] > gen[1] * 0.84 && gen[3] < gen[1] * 1.19);
+        e->setParameter(e, kDryWet, 1.0f);
         const double rc = takePeak(kRecord);       // record silence over it
         std::printf("  resample: after Resample take peak %.4f, after Record (silent input) take peak %.4f\n", rs, rc);
         check("resample: a Resample take captures the playing loop", rs > 0.01);

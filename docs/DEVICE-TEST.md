@@ -32,7 +32,12 @@ or program track's insert.
 - [ ] Forward/Reverse loops: the marker wraps to exactly IN (not ~10% in). Inside the loop
       crossfade it moves at double speed and wraps at the fade's midpoint (display only).
       If it stutters, lower the update rate (`kUiPeriodMs`).
-- [ ] Muting a stream dims its span, its marker and its column, but not its name button.
+- [ ] Each playing stream lights the waveform bar it is on, in its colour, at that bar's height;
+      no coloured slivers beside the bars. Muting a stream dims its span and its column (not
+      its name button) and its bar stops lighting.
+- [ ] A resampled take plays back at about the level of the loop it was made from (normalised);
+      resampling the same loop several times does not fade it away.
+- [ ] The Speed readout is easy to read at arm's length.
 
 ## 3. Controls and Q-Links
 

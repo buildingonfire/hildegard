@@ -116,6 +116,13 @@ constexpr float kMinXfadeMs   = 2.0f;      // but never shorter than this
 constexpr float kSeamMs       = 20.0f;     // crossfade where the take's end meets its start
 constexpr float kJumpFadeMs   = 20.0f;     // crossfade when moving Start makes the head jump
 constexpr float kRecFadeMs    = 5.0f;      // fade in/out on the recorded chunk edges
+// Resampled takes are normalised (2026-11-16): each pass through Volume, pan and Dry/Wet costs
+// several dB, so a chain of resamples would fade away. The take's peak is tracked while it
+// records and the take then PLAYS at a gain that puts that peak at kNormPeak (no pause, no
+// rewrite). The boost is capped so a near-silent resample does not bring up noise. Record
+// takes (the input) are left as played.
+constexpr float kNormPeak     = 0.891f;    // -1 dBFS
+constexpr float kNormMaxGain  = 3.98f;     // +12 dB
 constexpr float kSwapFadeMs   = 20.0f;     // wet fade-in after a buffer swap
 constexpr float kPlayInMs     = 5.0f;      // stream fade-in when the transport starts
 constexpr float kPlayOutMs    = 10.0f;     // stream fade-out when the transport stops
@@ -217,6 +224,7 @@ struct Chunk
 {
     std::vector<float> L, R;
     int length = 0;
+    float gain = 1.0f;   // playback gain (normalised resamples); saved into the project's audio
     void alloc() { L.assign(kMaxFrames, 0.0f); R.assign(kMaxFrames, 0.0f); }
 };
 
@@ -542,7 +550,7 @@ public:
         {
             char id[16];
             std::snprintf(id, sizeof(id), "wave%03d", i);
-            display(floatParam(id, "", 0.0f, 1.0f, 0.0f, "", 2));
+            display(floatParam(id, "", 0.0f, 1.0f, 1.0f, "", 2));   // 1 = no bar (see computeWave)
         }
 
         // ----- Appended after the display params (identity: never reorder) -----
@@ -624,6 +632,7 @@ public:
             Chunk& back = chunk_[1 - front_];
             back.L.swap(stage_L_); back.R.swap(stage_R_);
             back.length = stageLen_;
+            back.gain = 1.0f;   // a saved take has its gain already applied
             front_ = 1 - front_;
             frontOut_.store(front_, std::memory_order_release);
             waveGen_.fetch_add(1, std::memory_order_release);   // UI worker redraws the waveform
@@ -728,7 +737,7 @@ public:
             const float yR = dryR * gDry + wetR * gWet;
 
             // ----- bar-synced start: armed, and this frame is the bar line -----
-            if (i == armStart) { armed_ = false; recording_ = true; recLen_ = 0; recTarget_ = armTarget_; }
+            if (i == armStart) { armed_ = false; recording_ = true; recLen_ = 0; recPeak_ = 0.0f; recTarget_ = armTarget_; }
 
             // ----- recording: the input (Record) or what you hear (Resample) -----
             if (recording_ && recLen_ < recTarget_)
@@ -737,6 +746,7 @@ public:
                 float rl = fromOut ? yL : dryL;
                 float rr = fromOut ? yR : dryR;
                 if (recLen_ < (int)recFade) { const float g = recLen_ / recFade; rl *= g; rr *= g; }
+                recPeak_ = std::max(recPeak_, std::max(std::fabs(rl), std::fabs(rr)));
                 back->L[(size_t)recLen_] = rl;
                 back->R[(size_t)recLen_] = rr;
                 if (++recLen_ >= recTarget_)
@@ -833,7 +843,7 @@ public:
         putU32((uint32_t)sampleRate_);
         putU32((uint32_t)len);
         for (int i = 0; i < len; ++i)
-            for (float v : { c.L[(size_t)i], c.R[(size_t)i] })
+            for (float v : { c.L[(size_t)i] * c.gain, c.R[(size_t)i] * c.gain })
             {
                 const int16_t s = (int16_t)std::lround((double)clamp(v, -1.0f, 1.0f) * 32767.0);
                 out.push_back((uint8_t)(s & 0xFF));
@@ -967,7 +977,7 @@ private:
                 // Fixed Loop Length is retired (slot 3 is hidden), so every take is Free. The
                 // bar-sync path below is kept for a future "start on the downbeat" option.
                 const int bars = 0; (void)kBars;
-                if (bars == 0 || !barSyncAvailable(tr)) { recording_ = true; recLen_ = 0; recTarget_ = kMaxFrames; }
+                if (bars == 0 || !barSyncAvailable(tr)) { recording_ = true; recLen_ = 0; recPeak_ = 0.0f; recTarget_ = kMaxFrames; }
                 else                                    { armed_ = true; armBars_ = bars; }
                 *prev[k] = true;
                 return;                                // one action per block
@@ -1013,11 +1023,17 @@ private:
         return std::max(0, f);
     }
 
+    static float normGain(float peak)
+    {
+        return peak > kNormPeak / kNormMaxGain ? kNormPeak / peak : kNormMaxGain;
+    }
+
     void finishRecording()
     {
         recording_ = false;
         Chunk& back = chunk_[1 - front_];
         back.length = recLen_;
+        back.gain = takeBtn_ == 1 ? normGain(recPeak_) : 1.0f;
         const int fade = (int)msToSamples(kRecFadeMs, sampleRate_);
         for (int k = 0; k < fade && k < back.length; ++k)
         {
@@ -1122,9 +1138,15 @@ private:
     {
         publishSpans();
 
-        // Head positions (0-1 across the whole chunk). ~1/1000 of the chunk is far below a pixel.
+        // Head positions as the waveform bar each head is on (2026-11-16: the playhead lights
+        // that bar in its stream's colour): bar k of kWaveBars is published as k / (kWaveBars-1),
+        // which puts the skin's lit-bar thumb exactly over bar k.
         for (int s = 0; s < kNumStreams; ++s)
-            publish(kPos0 + s, posOut_[s].load(std::memory_order_relaxed), 0.0008f, lastPos_[s]);
+        {
+            const float f = posOut_[s].load(std::memory_order_relaxed);
+            const int bar = clamp((int)(f * kWaveBars), 0, kWaveBars - 1);
+            publish(kPos0 + s, (float)bar / (float)(kWaveBars - 1), 0.25f / kWaveBars, lastPos_[s]);
+        }
 
         // Status, by priority: live activity first, then timed messages, then the idle state.
         const unsigned full = bufferFullEvents_.load(std::memory_order_relaxed);
@@ -1190,7 +1212,10 @@ private:
             }
         }
         const float scale = top > 1e-6f ? 1.0f / top : 0.0f;
-        for (int b = 0; b < kWaveBars; ++b) set(kWave0 + b, clamp(peaks[b] * scale, 0.0f, 1.0f));
+        // Published INVERTED (2026-11-16): the skin draws every bar at full height (grey, or lit
+        // in a stream's colour under a playhead) and these meters mask the part above the bar's
+        // height in the band colour, so 1 = no bar and 0 = a full-height bar.
+        for (int b = 0; b < kWaveBars; ++b) set(kWave0 + b, 1.0f - clamp(peaks[b] * scale, 0.0f, 1.0f));
     }
 
     // Write the captured bounce (already in saveBuf_) to disk. No audio-thread copy needed:
@@ -1317,10 +1342,12 @@ private:
 
         float sL, sR;
         readHead(st.ph, front, sL, sR);
+        sL *= front.gain; sR *= front.gain;
         if (st.jumpLeft > 0)   // Start moved: the head as it was fades out, the moved one in
         {
             float jL, jR;
             readHead(st.jump, front, jL, jR);
+            jL *= front.gain; jR *= front.gain;
             const float t = 1.0f - (float)st.jumpLeft / (float)st.jumpTotal;
             const float gIn = std::sqrt(t), gOut = std::sqrt(1.0f - t);
             sL = gIn * sL + gOut * jL;
@@ -1332,6 +1359,7 @@ private:
         {
             float oL, oR;
             readHead(st.ghost, ghostChunk, oL, oR);
+            oL *= ghostChunk.gain; oR *= ghostChunk.gain;
             sL = gNew * sL + gOld * oL;
             sR = gNew * sR + gOld * oR;
             if (advance) advanceHead(st.ghost, speed);
@@ -1395,6 +1423,7 @@ private:
     bool recording_ = false, recPrev_ = false, rsPrev_ = false;
     int  takeBtn_ = 0;              // which button owns the current take: 0 Record, 1 Resample
     int  recLen_ = 0;
+    float recPeak_ = 0.0f;          // loudest sample of the take being recorded (normalising)
     int  recTarget_ = kMaxFrames;   // frames this take will last (N bars, or 30 s for Free)
     bool armed_ = false;            // bar-synced: waiting for the next bar line
     int  armBars_ = 0, armTarget_ = kMaxFrames;

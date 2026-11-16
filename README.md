@@ -25,8 +25,10 @@ Releases and copy the folder onto your MPC (see *Install on an MPC* below).
 
 Three pages, on the function keys:
 
-- **F1 Record** (opens here): **Record** (tap to start, tap to stop), **Resample** (off:
-  record the track's input; on: record Hildegard's own output, as heard), **Save** (bounce
+- **F1 Record** (opens here): **Record** (tap to start, tap to stop), **Resample** (records
+  what you hear: the input plus the loops at the Dry/Wet mix; the new take is normalised so
+  its peak plays at -1 dBFS, boosting by at most +12 dB, so repeated resampling doesn't fade
+  away), **Save** (bounce
   what you hear to a WAV; the tile lights while it saves), **Dry/Wet**, and **Playback Speed
   Ratios** (Octaves / Ratios / Smooth: how the Speed knobs snap).
 - **F2 Loop**: per stream, **Start** and **Length** (the loop, % of the recording; a loop that
@@ -76,15 +78,19 @@ and the `_verify/` driver):
 - If the MPC resets the plugin when its transport stops, a take in progress is now kept
   (as if Record had been tapped off) instead of being thrown away.
 
-**Not done yet:** final colour pass; CPU benchmark on Gen-1 (32-bit) MPCs; release packaging.
+**Not done yet:** final colour pass.
 
-**To do (ideas, not promised):**
-- Start a capture exactly on the downbeat (the bar-sync code from the retired Fixed Loop
-  Length is still in the engine, switched off).
+**Release mode (after v1.0 is locked):** CPU benchmark on Gen-1 (32-bit) MPCs, release
+packaging, submission to the plugin collection.
+
+**Future version, if any:**
 - A crossfade-length control. (Drawing the loop ends as long as the crossfade was tried on
   2026-11-16 and did not read well; the ends are fixed-size brackets.)
-- Fixed Loop Length (bar-synced recording) was removed on 2026-11-16: tempo-exact looping
-  belongs in a possible rhythm-first sibling plugin, not here.
+
+**For a possible rhythm-first sibling plugin (same idea, different plugin):**
+- Tempo-exact looping: Fixed Loop Length (bar-synced recording) was removed from Hildegard
+  on 2026-11-16. The bar-sync code is still in Hildegard's engine, switched off.
+- Start a capture exactly on the downbeat.
 
 **To confirm (SPEC §16):** the square-law volume taper and the tone range.
 

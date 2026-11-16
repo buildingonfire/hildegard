@@ -20,7 +20,8 @@ The flow reads capture → shape → blend: Record/Save, then set the loop, then
 ## Shared across every page: the waveform band
 
 At the top of all three pages (content-area coords): **`20 8 1240 182`**.
-128 bars + four loop spans (per-stream colour, staggered heights) + four position markers.
+128 bars + four loop spans (per-stream colour, staggered heights). Each playhead lights the bar
+it is on in its stream's colour (2026-11-16; replaced the thin position markers).
 It's the one element that never moves between tabs.
 
 ## F1 — Record / Save
@@ -54,7 +55,7 @@ Each column: a full-width **name button** (~42px, taps to toggle `sN_mute`), the
 - Each control: name (left), value text (right), horizontal bar filled in the stream's colour.
 - **Bipolar fill** (grows from centre): **Tone, Pan, Speed** (0 / C / 0× is the centre).
 - **Unipolar fill** (from the left): **Volume, Start, Length, Dry/Wet**.
-- **Muted column**: dim everything except the name button; dim that stream's waveform span + marker.
+- **Muted column**: dim everything except the name button; dim that stream's waveform span; its playhead lights no bar.
 
 ## Q-Links (SPEC §6, updated)
 

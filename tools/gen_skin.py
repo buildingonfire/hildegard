@@ -21,7 +21,8 @@ Design notes
   pos1-4 with no track.
   A transparent "shield" component on top swallows touches so nothing in the band is editable.
 - Muted streams: every stream-coloured element exists twice, a lit and a dim copy, and
-  IndexedEnabling on Mute N shows exactly one of them.
+  IndexedEnabling on Mute N shows exactly one of them. The playhead marker has no dim copy:
+  a muted stream shows none.
 - Parameter-name captions are fixed Text labels placed over the slots (labels never take
   touches), so each slot reads "SPEED", not "SPEED 1".
 """
@@ -130,8 +131,7 @@ SPAN_H = 8          # 4 px drew nothing on device (ColourBar outline/inset eats 
 SPAN_INSET = 2      # measured on device: a ColourBar fills x+2 .. x+2+v*(w-4), rows 2..5 of 8
 CHEV_RISE = 10      # chevrons stand this many px above the span's visible top row
 CHEV_H = CHEV_RISE + 1   # image height: the rise plus 1 row overlapping the span (no gap)
-MARK_TOP = 6
-MARK_W = 4
+MASK_PAD = 1        # wave masks overhang each bar by 1 px a side (covers sub-pixel edges)
 
 # ---------------------------------------------------------------------------
 # PNG writing (4x supersampled, premultiplied box filter)
@@ -245,6 +245,29 @@ def solid_png(name, w, h, rgb):
     return name
 
 
+def bar_x(i):
+    """Left edge of waveform bar i in waveBand coordinates (fractional)."""
+    pitch = (BAR_X1 - BAR_X0) / N_WAVE
+    return BAR_X0 + i * pitch + (pitch - BAR_W) / 2.0
+
+
+def wave_background_png(name):
+    """The waveBand's background: band colour with all bars at full height, horizontally
+    anti-aliased at their fractional positions (the same positions as the masks and thumbs)."""
+    w, h = BAND_RECT[2], BAND_RECT[3]
+    cover = [0.0] * w
+    for i in range(N_WAVE):
+        a = bar_x(i); b = a + BAR_W
+        for x in range(int(a), min(w, int(b) + 1)):
+            cover[x] += max(0.0, min(b, x + 1) - max(a, x))
+    bar_row = b"\0" + b"".join(bytes(tuple(int(round(BAND[c] + (WAVE[c] - BAND[c]) * min(1.0, k))) for c in range(3)) + (255,))
+                               for k in cover)
+    band_row = b"\0" + bytes(BAND + (255,)) * w
+    rows = [bar_row if BAR_TOP <= y < BAR_BOT else band_row for y in range(h)]
+    write_png(os.path.join(OUT, name), w, h, rows)
+    return name
+
+
 def clear_png(name, w, h):
     write_png(os.path.join(OUT, name), w, h, [b"\0" + b"\0\0\0\0" * w] * h)
     return name
@@ -256,14 +279,16 @@ def clear_png(name, w, h):
 def make_images():
     imgs = {}
     half = BAR_MID - BAR_TOP
-    imgs["bar"] = solid_png("wave_bar.png", BAR_W, half, WAVE)
-    imgs["bar_off"] = clear_png("wave_bar_off.png", BAR_W, half)
+    # Waveform (2026-11-16, lit-bar playheads): the band's background image draws every bar at
+    # full height; a playhead's bar is lit by a stream-coloured thumb over it; band-coloured
+    # meter masks then cut each bar down to its height (wave params are published inverted).
+    imgs["wave_bg"] = wave_background_png("wave_bg.png")
+    imgs["mask"] = solid_png("wave_mask.png", BAR_W + 2 * MASK_PAD, half, BAND)
+    imgs["mask_off"] = clear_png("wave_mask_off.png", BAR_W + 2 * MASK_PAD, half)
     imgs["hit"] = clear_png("hit_clear.png", COL_W, NAME_H)   # invisible touch target over labels
 
     for s in range(4):
-        h = SPAN_Y[s] + SPAN_H - MARK_TOP
-        imgs["mark%d" % s] = solid_png("marker_s%d.png" % (s + 1), MARK_W, h, STREAM_RGB[s])
-        imgs["markdim%d" % s] = solid_png("marker_s%d_dim.png" % (s + 1), MARK_W, h, STREAM_DIM[s])
+        imgs["lit%d" % s] = solid_png("litbar_s%d.png" % (s + 1), BAR_W, BAR_BOT - BAR_TOP, STREAM_RGB[s])
 
         c = Canvas(COL_W, NAME_H)
         c.rrect(0, 0, COL_W, NAME_H, 7, STREAM_RGB[s])
@@ -513,8 +538,9 @@ def control_slot(s, bipolar, lit, speed=False):
     # Three centred rows: caption (a tab-level label, y 2-32), bar (36-54), value (56-82).
     return component(
         [focus_ring(COL_W, SLOT_H, STREAM_RGB[s])] + bars +
-        [entry("value", "Label", label("Value", text_style(19, txt, "horizontallyCentred verticallyCentred")),
-               rect(8, 56, 284, 26))],
+        [entry("value", "Label", label("Value", text_style(22 if speed else 19, (TEXT if lit else TEXT_DIM) if speed else txt,
+                                                           "horizontallyCentred verticallyCentred")),
+               rect(8, 55, 284, 28))],
         actions=[action("Mouse Down", "Q-Link"),
                  action("Double Click", "Show Overlay", extra=overlay),
                  action("Enter Pressed", "Show Overlay", extra=overlay)],
@@ -541,17 +567,30 @@ def mode_slot(s, lit, imgs):
 def wave_band(imgs):
     """The waveform band, identical on every tab. Uses literal Parameter handles throughout."""
     half = BAR_MID - BAR_TOP
-    pitch = (BAR_X1 - BAR_X0) / N_WAVE
     kids = []
+    # Playheads: a stream-coloured full-height bar, stepped onto the bar under the head
+    # (pos param = bar / 127). Thumb left = rect x + v * (rect w - BAR_W) = bar_x(k) at v = k/127.
+    # Hidden while the stream is muted. Drawn before the masks, which cut it to the bar's height.
+    for s in range(4):
+        thumb = {"version": 3, "sliderType": "TrackAndThumb", "direction": "Horizontal",
+                 "thumbImage": imgs["lit%d" % s], "thumbTrackVisible": False,
+                 "revealedImage": "", "handleName": P(P_POS0 + s)}
+        x0 = bar_x(0)
+        kids.append(entry("litbar%d" % (s + 1), "Slider", thumb,
+                          rect(round(x0, 2), BAR_TOP, round(bar_x(N_WAVE - 1) - x0 + BAR_W, 2), BAR_BOT - BAR_TOP),
+                          show_if=active(s)))
+    # Masks: the top half's grows down from the top, the bottom half's up from the bottom, by
+    # (1 - bar height), in the band colour.
     for i in range(N_WAVE):
-        x = BAR_X0 + i * pitch + (pitch - BAR_W) / 2.0
+        x = bar_x(i) - MASK_PAD
         h = P(P_WAVE0 + i)
-        for direction, y in (("Up", BAR_TOP), ("Down", BAR_MID)):
+        for direction, y in (("Down", BAR_TOP), ("Up", BAR_MID)):
             meter = {"version": 3, "direction": direction, "invert": False,
-                     "inactiveImage": imgs["bar_off"], "peakImage": imgs["bar"], "rmsImage": imgs["bar"],
+                     "inactiveImage": imgs["mask_off"], "peakImage": imgs["mask"], "rmsImage": imgs["mask"],
                      "peakHandle": h, "rmsHandle": h, "peakHoldHandle": h,
                      "peakHoldSize": 0, "peakHoldColour": CLEAR}
-            kids.append(entry("wave%03d%s" % (i, direction[0]), "Meter", meter, rect(round(x, 2), y, BAR_W, half)))
+            kids.append(entry("wave%03d%s" % (i, direction[0]), "Meter", meter,
+                              rect(round(x, 2), y, BAR_W + 2 * MASK_PAD, half)))
 
     span_w = BAR_X1 - BAR_X0
     for s in range(4):
@@ -588,22 +627,15 @@ def wave_band(imgs):
                 kids.append(entry("chev%d%s%s" % (s + 1, "L" if lit else "D", "e" if end else "s"), "Slider", thumb,
                                   rect(fx0 - w if end else fx0, cy, fw + w, CHEV_H),
                                   show_if=active(s) if lit else muted(s)))
-    for s in range(4):
-        h = SPAN_Y[s] + SPAN_H - MARK_TOP
-        for lit in (True, False):
-            thumb = {"version": 3, "sliderType": "TrackAndThumb", "direction": "Horizontal",
-                     "thumbImage": imgs[("mark%d" if lit else "markdim%d") % s], "thumbTrackVisible": False,
-                     "revealedImage": "", "handleName": P(P_POS0 + s)}
-            kids.append(entry("marker%d" % (s + 1), "Slider", thumb,
-                              rect(BAR_X0 - MARK_W / 2.0, MARK_TOP, span_w + MARK_W, h),
-                              show_if=active(s) if lit else muted(s)))
     # Faint hint while there is no take yet (status 0 = "Press Record"); gone once a waveform exists.
     kids.append(text_entry("hint", "Ready to record", rect(0, BAR_TOP, BAND_RECT[2], BAR_BOT - BAR_TOP),
                            text_style(30, TEXT_DIMMER, "horizontallyCentred verticallyCentred", "SemiBold"),
                            show_if=["IndexedEnabling/0/%d/%s" % (len(STATUS_CHOICES), P(P_STATUS))]))
     # Shield: last child, so it is on top and takes every touch on the band.
     kids.append(custom("touchShield", rect(0, 0, BAND_RECT[2], BAND_RECT[3])))
-    return component(kids, background=argb(BAND))
+    band = component(kids, background=argb(BAND))
+    band["backgroundData"]["focussed"]["image"] = band["backgroundData"]["unfocussed"]["image"] = imgs["wave_bg"]
+    return band
 
 
 # ---------------------------------------------------------------------------
