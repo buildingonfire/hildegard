@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate Hildegard's hand-written MPC skin: skins/TUI.json, skins/Q-Links.json and PNGs.
 
-    python plugins/Hildegard/tools/gen_skin.py
+    python tools/gen_skin.py   (from the hildegard repo root)
 
 Layout source of truth: docs/UI-LAYOUT.md (locked 2026-11-14). Parameter indices: SPEC.md
 Section 5 + src/Hildegard.cpp. Colours: SPEC 7.5 (a final colour pass is still to come; change

@@ -8,8 +8,8 @@
 // on any FAIL. It also writes a WAV of the first playback for listening.
 //
 // Build (from repo root), then run:
-//   <zig> c++ -std=c++17 -I framework plugins/Hildegard/_verify/render.cpp -o plugins/Hildegard/build/verify.exe
-//   plugins/Hildegard/build/verify.exe plugins/Hildegard/build/native/hildegard.dll plugins/Hildegard/build/play.wav
+//   <zig> c++ -std=c++17 -I framework ../hildegard/_verify/render.cpp -o ../hildegard/build/verify.exe   (from the SDK root)
+//   ../hildegard/build/verify.exe ../hildegard/build/native/hildegard.dll ../hildegard/build/play.wav
 
 #include "mpc_vst2_abi.h"
 

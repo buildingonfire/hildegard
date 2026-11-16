@@ -35,7 +35,7 @@ It is free and open source, built with Akai's official MPC Plugin SDK, and inten
 1. Work inside a clone of Akai's SDK: `https://github.com/inmusic-software/mpc-plugin-builder-sdk`. Read its `AGENTS.md`, `CLAUDE.md`, and the docs in `docs/` before writing code. The SDK's rules override anything in this spec that conflicts with them; flag any conflict you find.
 2. Read **Section 13 (Risks to prototype first)** and **Section 14 (Build order)** before scaffolding. Several display and file features are unproven on the hardware; the build order tests them early so the design can adapt.
 3. Treat **Section 16 (Defaults to confirm)** as provisional values, not requirements.
-4. **Never modify the SDK's own files** (`framework/`, `tools/`, `docs/`, `schemas/`, `ui-kit/`, the skills folders). Keep everything Hildegard needs inside `plugins/Hildegard/`, plus `SPEC.md` at the root. If the SDK seems to need a change, stop and explain why instead. This keeps Akai's future SDK updates mergeable with a plain `git pull`. After any SDK update, rebuild and rerun the host simulator test before installing on a device.
+4. **Never modify the SDK's own files** (`framework/`, `tools/`, `docs/`, `schemas/`, `ui-kit/`, the skills folders). Keep everything Hildegard needs inside this repo, which lives beside the SDK checkout (not inside it). If the SDK seems to need a change, stop and explain why instead. This keeps Akai's future SDK updates mergeable with a plain `git pull`. After any SDK update, rebuild and rerun the host simulator test before installing on a device.
 5. The design principle that overrides precision everywhere: **Hildegard sounds good before it is sample-exact.** Every discontinuity (loop wrap, direction change, buffer swap, mute, transport start/stop) is crossfaded.
 
 ---
@@ -253,7 +253,7 @@ Global controls (Record, Resample, Length, Dry/Wet, Save) are on-screen touch co
 
 ## 7. Screen
 
-The skin is **hand-written** (`plugins/Hildegard/skins/`), because the SDK's `ui.json` generator cannot produce this layout. Use the generator only for the first on-device test (Section 14, step 5). See `docs/ui-reference.md`; the MPC rejects a whole skin file over a single wrong key, version or enum, so validate after every change.
+The skin is **hand-written** (`skins/`), because the SDK's `ui.json` generator cannot produce this layout. Use the generator only for the first on-device test (Section 14, step 5). See `docs/ui-reference.md`; the MPC rejects a whole skin file over a single wrong key, version or enum, so validate after every change.
 
 A reference sketch accompanies this spec: `hildegard_mpc_screen_sketch.png`.
 
@@ -398,7 +398,7 @@ At every step, run the host simulator's `test` command and fix every FAIL before
 - **Host simulator:** `.sdk-tools/host_sim build/native/<slug>.<ext> test --seconds 3 --wav build/test.wav` (and `--playing` to simulate a running transport). `dump` prints the parameter list the MPC will see.
 - **Validate:** `python tools/validate.py` before every device install.
 - **Install:** copy `build/Building on Fire - VST - Hildegard/` into `VST2 Plugins/` on a drive, or use `tools/mpc_remote.py` over the network (it needs the MPC's developer mode, which opens SSH; turn it off on networks you don't control).
-- **Package:** `python tools/package.py plugins/Hildegard`.
+- **Package:** `python tools/package.py ../hildegard` (from the SDK root).
 - **Release:** GitHub release on `buildingonfire/hildegard` with the packaged zip and source.
 - **Catalog:** list Hildegard in the community Open MPC catalog (open-source licenses are accepted; releases are marked verified per hardware generation when testers confirm them). Ask testers for Gen 1 results before calling a release stable.
 - **User guide (README):** what Hildegard does, install steps (including the two Enhancements switches), the Mix and Loop tabs, Record/Resample/Length/Save, where saved loops go, and the safety note that third-party plugins can crash the MPC.

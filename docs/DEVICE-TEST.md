@@ -3,7 +3,7 @@
 Everything below has been built and tested offline. None of it has run on the MPC yet.
 Go in order: the early items decide whether the later ones are reachable at all.
 
-Install: `python tools/build.py plugins/Hildegard`, then the `mpc-plugin-deploy` skill
+Install: `python tools/build.py ../hildegard` (from the SDK root), then the `mpc-plugin-deploy` skill
 (`tools/mpc_remote.py`). Restart the MPC after installing, then put Hildegard on an audio
 or program track's insert.
 

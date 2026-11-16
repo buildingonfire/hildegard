@@ -15,8 +15,9 @@ Hildegard is built with Akai's official **MPC Plugin SDK**
 Hildegard's own source — no SDK code. To build it from source:
 
 1. Clone the SDK: `git clone https://github.com/inmusic-software/mpc-plugin-builder-sdk`
-2. Clone this repo into the SDK's `plugins/` folder as `plugins/Hildegard`.
-3. From the SDK root: `python tools/build.py plugins/Hildegard`.
+2. Clone this repo NEXT TO the SDK, not inside it (e.g. `repos/mpc-plugin-builder-sdk`
+   and `repos/hildegard`), so the two never mix.
+3. From the SDK root: `python tools/build.py ../hildegard`.
 
 **Most people don't need to build it** — grab the packaged `.zip` from this repo's
 Releases and copy the folder onto your MPC (see *Install on an MPC* below).
@@ -97,8 +98,9 @@ packaging, submission to the plugin collection.
 ## Build
 
 ```
-python tools/build.py plugins/Hildegard
-.sdk-tools/host_sim <build/native/hildegard.*> test --wav build/test.wav
+# from the SDK root
+python tools/build.py ../hildegard
+.sdk-tools/host_sim ../hildegard/build/native/hildegard.* test --wav ../hildegard/build/test.wav
 ```
 
 `tools/gen_skin.py` regenerates `skins/` (TUI.json, Q-Links.json and the PNGs); rerun it
